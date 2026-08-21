@@ -2,8 +2,10 @@ import { Box, Text, useInput } from "ink";
 import React from "react";
 import type { FreeModel } from "../../api/schemas.js";
 import {
+  MODEL_COL_WIDTH,
   MODEL_SORT_KEYS,
   activeFilterLabels,
+  columnGap,
   formatColumnHeader,
   formatCurrency,
   formatNumber,
@@ -183,16 +185,19 @@ export function ModelsTab(props: ModelsTabProps) {
   const { start: viewStart, end: viewEnd } = listViewport(selectedIndex, rows.length, visibleCount);
   const visibleRows = rows.slice(viewStart, viewEnd);
 
+  const gap = columnGap();
   const header =
     `${"".padEnd(2)}` +
     (creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : "") +
     `${"Slug".padEnd(slugWidth)}` +
-    formatColumnHeader("intel", props.sort, props.sortAsc, 6) +
-    (narrow ? "" : formatColumnHeader("code", props.sort, props.sortAsc, 6)) +
-    formatColumnHeader("value", props.sort, props.sortAsc, 7) +
-    (narrow ? "" : formatColumnHeader("cost", props.sort, props.sortAsc, 7)) +
-    (narrow ? "" : formatColumnHeader("speed", props.sort, props.sortAsc, 7)) +
-    (narrow ? "" : formatColumnHeader("release", props.sort, props.sortAsc, 8));
+    formatColumnHeader("intel", props.sort, props.sortAsc) +
+    gap +
+    (narrow ? "" : formatColumnHeader("code", props.sort, props.sortAsc) + gap) +
+    formatColumnHeader("value", props.sort, props.sortAsc) +
+    gap +
+    (narrow ? "" : formatColumnHeader("cost", props.sort, props.sortAsc) + gap) +
+    (narrow ? "" : formatColumnHeader("speed", props.sort, props.sortAsc) + gap) +
+    (narrow ? "" : formatColumnHeader("release", props.sort, props.sortAsc));
 
   return (
     <Box flexDirection="column">
@@ -237,12 +242,12 @@ export function ModelsTab(props: ModelsTabProps) {
                 ? truncate(model.model_creator.name, creatorWidth - 1).padEnd(creatorWidth)
                 : "") +
               `${truncate(model.slug, slugWidth - 1).padEnd(slugWidth)}` +
-              `${intel.padStart(6)}` +
-              `${narrow ? "" : code.padStart(6)}` +
-              `${value.padStart(7)}` +
-              `${narrow ? "" : cost.padStart(7)}` +
-              `${narrow ? "" : speed.padStart(7)}` +
-              `${narrow ? "" : release.padStart(8)}`;
+              `${intel.padStart(MODEL_COL_WIDTH.intel)}${gap}` +
+              `${narrow ? "" : `${code.padStart(MODEL_COL_WIDTH.code)}${gap}`}` +
+              `${value.padStart(MODEL_COL_WIDTH.value)}${gap}` +
+              `${narrow ? "" : `${cost.padStart(MODEL_COL_WIDTH.cost)}${gap}`}` +
+              `${narrow ? "" : `${speed.padStart(MODEL_COL_WIDTH.speed)}${gap}`}` +
+              `${narrow ? "" : release.padStart(MODEL_COL_WIDTH.release)}`;
             return (
               <Text key={model.id} inverse={rowIndex === selectedIndex && !props.detailOpen}>
                 {line}

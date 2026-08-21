@@ -59,34 +59,44 @@ export const MODEL_SORT_DESCRIPTIONS: Record<
   release: { desc: "newest", asc: "oldest" },
 };
 
+export const MODEL_COL_WIDTH: Record<ModelSortField, number> = {
+  intel: 7,
+  code: 7,
+  value: 8,
+  cost: 8,
+  speed: 8,
+  release: 11,
+};
+
+const HEADER_BOLD_ON = "\x1b[1m";
+const HEADER_BOLD_OFF = "\x1b[22m";
+
 export function formatSortStatus(sort: ModelSortField, ascending: boolean): string {
   const hint = ascending ? MODEL_SORT_DESCRIPTIONS[sort].asc : MODEL_SORT_DESCRIPTIONS[sort].desc;
   const arrow = ascending ? "↑" : "↓";
   return `${MODEL_SORT_LABELS[sort]} ${arrow} (${hint})`;
 }
 
-/** Vim-style: underscore before the sort-key letter when that column is active. */
+/** Bold label + arrow on the active sort column; fixed width includes the arrow. */
 export function formatColumnHeader(
   field: ModelSortField,
   activeSort: ModelSortField,
   ascending: boolean,
-  width: number,
 ): string {
   const label = MODEL_COLUMN_HEADERS[field];
-  const key = MODEL_SORT_KEYS[field];
-  let text = label;
-  if (field === activeSort) {
-    const index = label.toLowerCase().indexOf(key.toLowerCase());
-    if (index >= 0) {
-      text = `${label.slice(0, index)}_${label[index]}${label.slice(index + 1)}`;
-    } else if (key === "$") {
-      text = `${label}_$`;
-    } else {
-      text = `${label}_${key}`;
-    }
-    text += ascending ? "↑" : "↓";
+  const width = MODEL_COL_WIDTH[field];
+  const alignStart = field !== "value" && field !== "cost";
+  if (field !== activeSort) {
+    return alignStart ? label.padEnd(width) : label.padStart(width);
   }
-  return field === "value" || field === "cost" ? text.padStart(width) : text.padEnd(width);
+  const arrow = ascending ? "↑" : "↓";
+  const text = `${label}${arrow}`;
+  const padded = alignStart ? text.padEnd(width) : text.padStart(width);
+  return `${HEADER_BOLD_ON}${padded}${HEADER_BOLD_OFF}`;
+}
+
+export function columnGap(): string {
+  return " ";
 }
 
 function outputPrice(model: FreeModel): number | null {

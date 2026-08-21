@@ -65,9 +65,9 @@ describe("App shell", () => {
 
     await waitForFrame(stdout, "Models");
     stdin.write("?");
-    await waitForFrame(stdout, "switch tab");
+    await waitForFrame(stdout, "keyboard shortcuts");
     stdin.write("?");
-    await vi.waitFor(() => expect(lastFrame(stdout)).not.toContain("switch tab"), {
+    await vi.waitFor(() => expect(lastFrame(stdout)).not.toContain("keyboard shortcuts"), {
       timeout: 5000,
       interval: 25,
     });

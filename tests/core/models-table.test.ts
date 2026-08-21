@@ -81,9 +81,11 @@ describe("modelTableLayout", () => {
 });
 
 describe("formatColumnHeader", () => {
-  it("underscores the sort-key letter on the active column", () => {
-    expect(formatColumnHeader("release", "release", false, 8)).toContain("_D");
-    expect(formatColumnHeader("release", "release", false, 8)).toContain("↓");
+  it("bolds the active sort column and appends a direction arrow", () => {
+    const header = formatColumnHeader("intel", "intel", false);
+    expect(header).toContain("\x1b[1m");
+    expect(header).toContain("Intel↓");
+    expect(header).toContain("\x1b[22m");
   });
 });
 

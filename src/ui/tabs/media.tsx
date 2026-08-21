@@ -2,6 +2,7 @@ import { Box, Text, useInput } from "ink";
 import React from "react";
 import type { ArenaEntry, MediaArenaKind } from "../../api/schemas.js";
 import { mediaArenaPaths } from "../../api/schemas.js";
+import { mediaTableLayout } from "../../core/media-table.js";
 import { isNarrow, listViewport } from "../logic.js";
 import { setState } from "../store.js";
 
@@ -31,6 +32,12 @@ function truncate(text: string, max: number): string {
   return `${text.slice(0, max - 1)}…`;
 }
 
+function cycleArena(current: MediaArenaKind, direction: 1 | -1): MediaArenaKind {
+  const index = MEDIA_ARENA_KINDS.indexOf(current);
+  const next = MEDIA_ARENA_KINDS[(index + direction + MEDIA_ARENA_KINDS.length) % MEDIA_ARENA_KINDS.length];
+  return next ?? "tts";
+}
+
 export function MediaTab(props: MediaTabProps) {
   const narrow = isNarrow(props.width);
   const entries = [...(props.arenas[props.arena] ?? [])].sort((left, right) => right.elo - left.elo);
@@ -38,8 +45,7 @@ export function MediaTab(props: MediaTabProps) {
   const visibleCount = narrow ? 10 : 16;
   const { start: viewStart, end: viewEnd } = listViewport(selectedIndex, entries.length, visibleCount);
   const visibleRows = entries.slice(viewStart, viewEnd);
-  const nameWidth = narrow ? 22 : Math.max(28, props.width - 36);
-  const creatorWidth = narrow ? 0 : 14;
+  const { creatorWidth, slugWidth } = mediaTableLayout(narrow);
 
   React.useEffect(() => {
     if (props.demo) return;
@@ -48,15 +54,12 @@ export function MediaTab(props: MediaTabProps) {
   }, [props.demo, props.arena, props.arenas, props.onLoadArena]);
 
   useInput((input, key) => {
-    const arenaIndex = MEDIA_ARENA_KINDS.indexOf(props.arena);
-    if (key.leftArrow || input === "[") {
-      const next = MEDIA_ARENA_KINDS[(arenaIndex - 1 + MEDIA_ARENA_KINDS.length) % MEDIA_ARENA_KINDS.length];
-      if (next !== undefined) setState({ mediaArena: next, mediaSelectedIndex: 0 });
+    if (input === "[" || input === ",") {
+      setState({ mediaArena: cycleArena(props.arena, -1), mediaSelectedIndex: 0 });
       return;
     }
-    if (key.rightArrow || input === "]") {
-      const next = MEDIA_ARENA_KINDS[(arenaIndex + 1) % MEDIA_ARENA_KINDS.length];
-      if (next !== undefined) setState({ mediaArena: next, mediaSelectedIndex: 0 });
+    if (input === "]" || input === ".") {
+      setState({ mediaArena: cycleArena(props.arena, 1), mediaSelectedIndex: 0 });
       return;
     }
     if (key.upArrow) {
@@ -68,17 +71,22 @@ export function MediaTab(props: MediaTabProps) {
     }
   });
 
+  const arenaIndex = MEDIA_ARENA_KINDS.indexOf(props.arena) + 1;
+
   return (
     <Box flexDirection="column">
       <Text dimColor>
-        {MEDIA_ARENA_LABELS[props.arena]} · {entries.length} models · ←/→ switch arena · ? keys
+        arena {arenaIndex}/{MEDIA_ARENA_KINDS.length}: {MEDIA_ARENA_LABELS[props.arena]} · {entries.length}{" "}
+        models · [ ] prev/next arena · Tab/1-4 switch tabs · ? keys
       </Text>
       <Text> </Text>
       <Box flexDirection="column">
         <Text bold>
-          {`${"".padEnd(1)}${"Model".padEnd(nameWidth)}${
-            creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : ""
-          }${"Elo".padStart(6)}${narrow ? "" : "CI±".padStart(6)}`}
+          {`${"".padEnd(1)}` +
+            (creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : "") +
+            `${"Slug".padEnd(slugWidth)}` +
+            `${"Elo".padStart(6)} ` +
+            (narrow ? "" : `${"CI±".padStart(5)}`)}
         </Text>
         {entries.length === 0 ? (
           <Text dimColor>no arena data loaded — press r to refresh</Text>
@@ -86,11 +94,15 @@ export function MediaTab(props: MediaTabProps) {
           visibleRows.map((entry, index) => {
             const rowIndex = viewStart + index;
             const marker = rowIndex === selectedIndex ? "▶" : " ";
-            const ci =
-              entry.ci_95 === null ? "—" : `±${entry.ci_95.toFixed(0)}`;
-            const line = `${marker}${truncate(entry.name, nameWidth - 1).padEnd(nameWidth)}${
-              creatorWidth > 0 ? truncate(entry.model_creator.name, creatorWidth - 1).padEnd(creatorWidth) : ""
-            }${entry.elo.toFixed(0).padStart(6)}${narrow ? "" : ci.padStart(6)}`;
+            const ci = entry.ci_95 === null ? "—" : `±${entry.ci_95.toFixed(0)}`;
+            const line =
+              `${marker}` +
+              (creatorWidth > 0
+                ? truncate(entry.model_creator.name, creatorWidth - 1).padEnd(creatorWidth)
+                : "") +
+              `${truncate(entry.slug, slugWidth - 1).padEnd(slugWidth)}` +
+              `${entry.elo.toFixed(0).padStart(6)} ` +
+              (narrow ? "" : `${ci.padStart(5)}`);
             return (
               <Text key={entry.id} inverse={rowIndex === selectedIndex}>
                 {line}
@@ -98,6 +110,13 @@ export function MediaTab(props: MediaTabProps) {
             );
           })
         )}
+        {entries.length > visibleCount ? (
+          <Text dimColor>
+            {viewStart + 1}-{viewEnd} of {entries.length}
+            {viewEnd < entries.length ? " · ↓ more below" : ""}
+            {viewStart > 0 ? " · ↑ more above" : ""}
+          </Text>
+        ) : null}
       </Box>
     </Box>
   );
