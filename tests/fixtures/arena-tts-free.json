@@ -1,0 +1,38 @@
+{
+  "tier": "free",
+  "data": [
+    {
+      "id": "arena-1",
+      "name": "VoiceForge TTS 2",
+      "slug": "voiceforge-tts-2",
+      "model_creator": {
+        "id": "creator-voiceforge",
+        "name": "VoiceForge"
+      },
+      "elo": 1240,
+      "ci_95": 22
+    },
+    {
+      "id": "arena-2",
+      "name": "Chime Studio",
+      "slug": "chime-studio",
+      "model_creator": {
+        "id": "creator-chime",
+        "name": "Chime"
+      },
+      "elo": 1187,
+      "ci_95": 19
+    },
+    {
+      "id": "arena-3",
+      "name": "EchoVox Mini",
+      "slug": "echovox-mini",
+      "model_creator": {
+        "id": "creator-echovox",
+        "name": "EchoVox"
+      },
+      "elo": 1102,
+      "ci_95": null
+    }
+  ]
+}

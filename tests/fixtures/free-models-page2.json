@@ -1,0 +1,111 @@
+{
+  "tier": "free",
+  "intelligence_index_version": 4.1,
+  "pagination": {
+    "page": 2,
+    "page_size": 200,
+    "total_pages": 2,
+    "has_more": false
+  },
+  "data": [
+    {
+      "id": "demo-model-4",
+      "name": "Halcyon Turbo",
+      "slug": "halcyon-t",
+      "release_date": "2026-04-01",
+      "model_creator": {
+        "id": "demo-creator-Halcyon",
+        "name": "Halcyon"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 65.1,
+        "artificial_analysis_coding_index": 58.9,
+        "artificial_analysis_agentic_index": 55.4
+      },
+      "artificial_analysis_intelligence_index_cost": {
+        "total_cost": 6.9,
+        "cost_per_task": {
+          "total_cost": 0.06
+        }
+      },
+      "pricing": {
+        "price_1m_input_tokens": 0.6,
+        "price_1m_output_tokens": 1.2,
+        "price_1m_cache_hit_tokens": 0.15,
+        "price_1m_cache_write_tokens": 0.75
+      },
+      "performance": {
+        "median_output_tokens_per_second": 260,
+        "median_time_to_first_token_seconds": 0.5,
+        "median_time_to_first_answer_token_seconds": 2.4,
+        "median_end_to_end_response_time_seconds": 4.1
+      }
+    },
+    {
+      "id": "demo-model-5",
+      "name": "Bramble 3B",
+      "slug": "bramble-3b",
+      "release_date": "2025-09-12",
+      "model_creator": {
+        "id": "demo-creator-Bramble",
+        "name": "Bramble"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 52.6,
+        "artificial_analysis_coding_index": 40.1,
+        "artificial_analysis_agentic_index": 38.0
+      },
+      "artificial_analysis_intelligence_index_cost": {
+        "total_cost": 1.1,
+        "cost_per_task": {
+          "total_cost": 0.01
+        }
+      },
+      "pricing": {
+        "price_1m_input_tokens": 0.1,
+        "price_1m_output_tokens": 0.15,
+        "price_1m_cache_hit_tokens": 0.03,
+        "price_1m_cache_write_tokens": 0.13
+      },
+      "performance": {
+        "median_output_tokens_per_second": 350,
+        "median_time_to_first_token_seconds": 0.3,
+        "median_time_to_first_answer_token_seconds": 1.9,
+        "median_end_to_end_response_time_seconds": 3.4
+      }
+    },
+    {
+      "id": "demo-model-6",
+      "name": "Lumen Lite",
+      "slug": "lumen-lite",
+      "release_date": "2026-01-27",
+      "model_creator": {
+        "id": "demo-creator-Lumen Forge",
+        "name": "Lumen Forge"
+      },
+      "evaluations": {
+        "artificial_analysis_intelligence_index": 60.0,
+        "artificial_analysis_coding_index": 49.5,
+        "artificial_analysis_agentic_index": 45.2
+      },
+      "artificial_analysis_intelligence_index_cost": {
+        "total_cost": 3.4,
+        "cost_per_task": {
+          "total_cost": 0.03
+        }
+      },
+      "pricing": {
+        "price_1m_input_tokens": 0.25,
+        "price_1m_output_tokens": 0.5,
+        "price_1m_cache_hit_tokens": 0.06,
+        "price_1m_cache_write_tokens": 0.31
+      },
+      "performance": {
+        "median_output_tokens_per_second": 205,
+        "median_time_to_first_token_seconds": 0.7,
+        "median_time_to_first_answer_token_seconds": 3.0,
+        "median_end_to_end_response_time_seconds": 5.0
+      }
+    }
+  ]
+}
