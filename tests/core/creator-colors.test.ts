@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { colorizeText, creatorColorIndex, creatorSwatch } from "../../src/core/creator-colors.js";
+import {
+  colorizeText,
+  creatorColorIndex,
+  creatorRgb,
+  creatorSwatch,
+  terminalSupportsTruecolor,
+} from "../../src/core/creator-colors.js";
 
 describe("creator-colors", () => {
   it("maps well-known labs to stable palette entries", () => {
@@ -13,6 +19,22 @@ describe("creator-colors", () => {
     expect(colored.startsWith("\x1b[")).toBe(true);
     expect(colored.endsWith("\x1b[0m")).toBe(true);
     expect(colored).toContain("A");
+  });
+
+  it("uses truecolor ANSI when the terminal supports it", () => {
+    const env = { COLORTERM: "truecolor" } as NodeJS.ProcessEnv;
+    expect(terminalSupportsTruecolor(env)).toBe(true);
+    expect(creatorRgb("OpenAI")).toEqual([16, 163, 127]);
+    const [r, g, b] = creatorRgb("Anthropic");
+    expect(r).toBeGreaterThan(0);
+    expect(g).toBeGreaterThan(0);
+    expect(b).toBeGreaterThan(0);
+  });
+
+  it("falls back to 256-color palette on dumb terminals", () => {
+    const env = { TERM: "dumb" } as NodeJS.ProcessEnv;
+    expect(terminalSupportsTruecolor(env)).toBe(false);
+    expect(creatorColorIndex("Anthropic")).toBe(208);
   });
 
   it("renders a swatch block", () => {

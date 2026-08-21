@@ -48,7 +48,7 @@ export function PlotTab(props: PlotTabProps) {
   return (
     <Box flexDirection="column">
       <Text dimColor>
-        Y: {Y_LABELS[props.yField]} · i/c/a/t switch axis · top 25 · colors by lab · ? keys
+        Y: {Y_LABELS[props.yField]} · i/c/a/t switch axis · top 25 · ★ band leaders · colors by lab · ? keys
       </Text>
       <Text>{plot}</Text>
     </Box>

@@ -1,5 +1,6 @@
 import type { FreeModel } from "../api/schemas.js";
 import { colorizeText } from "../core/creator-colors.js";
+import { computeOutstanding } from "../core/plot-highlights.js";
 import { median, modelValue } from "../core/metrics.js";
 
 const BRAILLE_BASE = 0x2800;
@@ -30,6 +31,7 @@ export interface QuadrantPlotOptions {
   xFormat?: (value: number) => string;
   yFormat?: (value: number) => string;
   colorize?: boolean;
+  outstanding?: ReadonlySet<string>;
 }
 
 interface ResolvedOptions {
@@ -45,6 +47,7 @@ interface ResolvedOptions {
   xFormat: (value: number) => string;
   yFormat: (value: number) => string;
   colorize: boolean;
+  outstanding: ReadonlySet<string>;
 }
 
 const DEFAULT_CORNER_LABELS: readonly [string, string, string, string] = [
@@ -60,6 +63,7 @@ interface CellState {
   hline: boolean;
   letter: string | null;
   creator: string | null;
+  label: string | null;
 }
 
 interface CanvasState {
@@ -121,6 +125,7 @@ function resolveOptions(options: QuadrantPlotOptions): ResolvedOptions {
     xFormat: options.xFormat ?? ((value) => `$${compactNumber(value)}`),
     yFormat: options.yFormat ?? compactNumber,
     colorize: options.colorize ?? false,
+    outstanding: options.outstanding ?? new Set(),
   };
 }
 
@@ -181,7 +186,7 @@ function blankCanvas(options: ResolvedOptions): CanvasState {
   for (let row = 0; row < options.height; row++) {
     const line: CellState[] = [];
     for (let col = 0; col < options.width; col++) {
-      line.push({ dots: 0, vline: false, hline: false, letter: null, creator: null });
+      line.push({ dots: 0, vline: false, hline: false, letter: null, creator: null, label: null });
     }
     cells.push(line);
   }
@@ -289,6 +294,7 @@ function placeMarkers(canvas: CanvasState, layout: Layout, points: PlotPoint[]):
       if (cell && cell.letter === null) {
         cell.letter = letter;
         cell.creator = point.creator ?? null;
+        cell.label = point.label;
         placed.push({ letter, point, row, col, creator: point.creator ?? null });
         return;
       }
@@ -298,11 +304,22 @@ function placeMarkers(canvas: CanvasState, layout: Layout, points: PlotPoint[]):
   return placed;
 }
 
+function styleMarker(
+  letter: string,
+  creator: string | null,
+  outstanding: boolean,
+  options: ResolvedOptions,
+): string {
+  if (!options.colorize || creator === null) {
+    return outstanding ? `\x1b[1;4m${letter}\x1b[0m` : letter;
+  }
+  return colorizeText(letter, creator, outstanding, outstanding);
+}
+
 function renderCell(canvas: CanvasState, cell: CellState, options: ResolvedOptions): string {
   if (cell.letter !== null) {
-    const letter = cell.letter;
-    if (options.colorize && cell.creator !== null) return colorizeText(letter, cell.creator, true);
-    return letter;
+    const outstanding = cell.label !== null && options.outstanding.has(cell.label);
+    return styleMarker(cell.letter, cell.creator, outstanding, options);
   }
   if (canvas.braille) {
     return cell.dots > 0 ? String.fromCharCode(BRAILLE_BASE + cell.dots) : " ";
@@ -416,11 +433,10 @@ function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: 
   const label = truncate(marker.point.label, modelWidth);
   const x = options.xFormat(marker.point.x);
   const y = options.yFormat(marker.point.y);
-  const markerText =
-    options.colorize && marker.creator !== null
-      ? colorizeText(marker.letter, marker.creator, true)
-      : marker.letter;
-  return `${markerText} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
+  const outstanding = options.outstanding.has(marker.point.label);
+  const markerText = styleMarker(marker.letter, marker.creator, outstanding, options);
+  const prefix = outstanding ? "★" : " ";
+  return `${prefix}${markerText} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
 }
 
 function legendLinesFor(placed: PlacedMarker[], options: ResolvedOptions): string[] {
@@ -470,7 +486,9 @@ function statsLine(
 ): string {
   const xMedian = stats.medianX === null ? "—" : options.xFormat(stats.medianX);
   const yMedian = stats.medianY === null ? "—" : options.yFormat(stats.medianY);
-  return `n=${plotted}/${total}  median ${options.xLabel}: ${xMedian}  median ${options.yLabel}: ${yMedian}`;
+  const highlight =
+    options.outstanding.size > 0 ? `  ★ ${options.outstanding.size} outstanding` : "";
+  return `n=${plotted}/${total}  median ${options.xLabel}: ${xMedian}  median ${options.yLabel}: ${yMedian}${highlight}`;
 }
 
 export function quadrantStats(points: PlotPoint[], options: QuadrantPlotOptions = {}): QuadrantStats {
@@ -563,6 +581,7 @@ export interface ModelPointInfo {
   xLabel: string;
   cornerLabels: [string, string, string, string];
   title: string;
+  outstanding: Set<string>;
 }
 
 interface YFieldSpec {
@@ -641,6 +660,7 @@ export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions =
     y: candidate.y,
     creator: candidate.model.model_creator.name,
   }));
+  const outstanding = computeOutstanding(points, { logX }).outstanding;
 
   const cornerLabels: [string, string, string, string] = [
     `cheap + ${spec.high}`,
@@ -657,6 +677,7 @@ export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions =
     xLabel: X_LABEL,
     cornerLabels,
     title: options.title ?? `${spec.label} vs ${X_LABEL}${logX ? " (log)" : ""}`,
+    outstanding,
   };
 }
 
@@ -672,6 +693,7 @@ export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOpt
     ascii: options.ascii ?? false,
     colorize: options.colorize ?? false,
     cornerLabels: info.cornerLabels,
+    outstanding: info.outstanding,
     xFormat: (value) => `$${compactNumber(value)}`,
   });
 }

@@ -80,6 +80,17 @@ describe("renderModelsQuadrant", () => {
     expect(text).toContain("cheap + fast");
   });
 
+  it("highlights outstanding models in the legend", () => {
+    const text = renderModelsQuadrant(demoModels(), {
+      top: 10,
+      width: 40,
+      height: 12,
+      colorize: true,
+    });
+    expect(text).toContain("★");
+    expect(text).toContain("outstanding");
+  });
+
   it("colorizes markers by creator when enabled", () => {
     const text = renderModelsQuadrant(demoModels(), {
       top: 5,
@@ -87,7 +98,7 @@ describe("renderModelsQuadrant", () => {
       height: 12,
       colorize: true,
     });
-    expect(text).toContain("\x1b[1;38;5;");
+    expect(text).toMatch(/\x1b\[1;38;(5;|2;)/);
     expect(text).toContain("\x1b[0m");
   });
 });
