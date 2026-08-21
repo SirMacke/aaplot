@@ -44,7 +44,7 @@ describe("App shell", () => {
 
     await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
-    expect(frame).toContain("34/34 models");
+    expect(frame).toContain("34/34");
     expect(frame).toContain("Kestrel Flash");
     expect(frame).toContain("quota 96/100");
     expect(frame).toContain("artificialanalysis.ai");
@@ -57,7 +57,7 @@ describe("App shell", () => {
 
     await waitForFrame(stdout, "Models");
     stdin.write("\t");
-    await waitForFrame(stdout, "cost vs intelligence");
+    await waitForFrame(stdout, "Y: intelligence");
   });
 
   it("toggles the help overlay with ?", async () => {
@@ -110,7 +110,7 @@ describe("App shell", () => {
       await waitForFrame(stdout, "Paste your key");
       stdin.write("test-key-1234567890");
       stdin.write("\n");
-      await waitForFrame(stdout, "34/34 models");
+      await waitForFrame(stdout, "34/34");
 
       expect(await keyStore.read()).toBe("test-key-1234567890");
       expect(fakeService.loadModels).toHaveBeenCalledWith();
@@ -140,7 +140,7 @@ describe("App shell", () => {
         serviceFactory: () => fakeService as unknown as DataService,
       });
 
-      await waitForFrame(stdout, "34/34 models");
+      await waitForFrame(stdout, "34/34");
       expect(fakeService.loadModels).toHaveBeenCalled();
     } finally {
       await rm(dir, { recursive: true, force: true });
@@ -150,8 +150,8 @@ describe("App shell", () => {
   it("renders a compact tab bar in narrow terminals", async () => {
     const { stdout } = mountApp({ demo: true, widthOverride: 80 });
 
-    await waitForFrame(stdout, "models");
+    await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
-    expect(frame).not.toContain("1 models");
+    expect(frame).not.toContain("1 Models");
   });
 });

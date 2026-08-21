@@ -10,7 +10,7 @@ import {
   prepareModelTable,
   type ModelSortField,
 } from "../../core/models-table.js";
-import { isNarrow } from "../logic.js";
+import { isNarrow, listViewport } from "../logic.js";
 import { setState, type ModelFilters } from "../store.js";
 
 export interface ModelsTabProps {
@@ -143,21 +143,23 @@ export function ModelsTab(props: ModelsTabProps) {
 
   const nameWidth = narrow ? 22 : 24;
   const creatorWidth = narrow ? 0 : 16;
+  const visibleCount = narrow ? 12 : 18;
+  const { start: viewStart, end: viewEnd } = listViewport(selectedIndex, rows.length, visibleCount);
+  const visibleRows = rows.slice(viewStart, viewEnd);
 
   return (
     <Box flexDirection="column">
       <Text dimColor>
-        sort {sortLabel} · {rows.length}/{props.models.length} models
+        {rows.length}/{props.models.length} · sort {sortLabel}
         {filterLabels.length > 0 ? ` · ${filterLabels.join(" · ")}` : ""}
+        {!props.searchOpen ? " · ? keys" : ""}
       </Text>
       {props.searchOpen ? (
         <Text>
           search: <Text color="cyan">{props.filters.query}</Text>
           <Text dimColor> esc cancel · enter done</Text>
         </Text>
-      ) : (
-        <Text dimColor>/ search · ↑↓ move · enter detail · i c v $ t d sort</Text>
-      )}
+      ) : null}
       <Text> </Text>
       <Box flexDirection="column">
         <Text bold>
@@ -170,8 +172,9 @@ export function ModelsTab(props: ModelsTabProps) {
         {rows.length === 0 ? (
           <Text dimColor>no models match the current filters</Text>
         ) : (
-          rows.slice(0, narrow ? 12 : 18).map((model, index) => {
-            const marker = index === selectedIndex ? "▶" : " ";
+          visibleRows.map((model, index) => {
+            const rowIndex = viewStart + index;
+            const marker = rowIndex === selectedIndex ? "▶" : " ";
             const intel = formatNumber(model.evaluations.artificial_analysis_intelligence_index);
             const code = formatNumber(model.evaluations.artificial_analysis_coding_index);
             const value = formatNumber(
@@ -191,14 +194,18 @@ export function ModelsTab(props: ModelsTabProps) {
               narrow ? "" : cost.padStart(7)
             }${narrow ? "" : speed.padStart(7)}${narrow ? "" : release.padStart(11)}`;
             return (
-              <Text key={model.id} inverse={index === selectedIndex && !props.detailOpen}>
+              <Text key={model.id} inverse={rowIndex === selectedIndex && !props.detailOpen}>
                 {line}
               </Text>
             );
           })
         )}
-        {rows.length > (narrow ? 12 : 18) ? (
-          <Text dimColor>… {rows.length - (narrow ? 12 : 18)} more below selection</Text>
+        {rows.length > visibleCount ? (
+          <Text dimColor>
+            {viewStart + 1}-{viewEnd} of {rows.length}
+            {viewEnd < rows.length ? " · ↓ more below" : ""}
+            {viewStart > 0 ? " · ↑ more above" : ""}
+          </Text>
         ) : null}
       </Box>
       {props.detailOpen && selected !== null ? <DetailCard model={selected} /> : null}

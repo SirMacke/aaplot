@@ -100,6 +100,17 @@ export function isNarrow(width: number): boolean {
   return width < 120;
 }
 
+export function listViewport(
+  selectedIndex: number,
+  total: number,
+  visible: number,
+): { start: number; end: number } {
+  if (total <= visible) return { start: 0, end: total };
+  let start = selectedIndex - Math.floor(visible / 2);
+  start = Math.max(0, Math.min(start, total - visible));
+  return { start, end: start + visible };
+}
+
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 403) {
@@ -109,6 +120,7 @@ export function errorMessage(error: unknown): string {
       const seconds = error.retryAfterSeconds ?? 0;
       return `daily quota exhausted — resets in ${formatDuration(seconds * 1000)}`;
     }
+    if (error.kind === "schema") return error.message;
     if (error.kind === "network") return "offline — no cached data yet. Press r to retry";
     return error.message;
   }

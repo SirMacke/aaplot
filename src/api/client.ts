@@ -8,6 +8,7 @@ import {
   mediaArenaPaths,
   rateLimitSchema,
   type ArenaEntry,
+  formatSchemaIssues,
   type FreeModel,
   type MediaArenaKind,
   type Pagination,
@@ -240,7 +241,12 @@ export class ApiClient {
   private parseOrThrow<S extends z.ZodTypeAny>(schema: S, body: unknown, what: string): z.infer<S> {
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      throw new ApiError(`unexpected ${what} response shape — aaplot may need an update`, "schema");
+      throw new ApiError(
+        `unexpected ${what} response shape — aaplot may need an update (${formatSchemaIssues(parsed.error)})`,
+        "schema",
+        null,
+        parsed.error.flatten(),
+      );
     }
     return parsed.data;
   }

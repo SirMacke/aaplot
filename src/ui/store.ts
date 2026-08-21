@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { FreeModel, RateLimit } from "../api/schemas.js";
 import type { ModelSortField } from "../core/models-table.js";
+import type { YField } from "../render/plot.js";
 
 export type TabId = "models" | "plot" | "compare" | "media";
 export type Screen = "loading" | "onboarding" | "main" | "error";
@@ -38,6 +39,7 @@ export interface AppState {
   selectedIndex: number;
   detailOpen: boolean;
   searchOpen: boolean;
+  plotY: YField;
 }
 
 export const initialModelsData: ModelsData = {
@@ -73,6 +75,7 @@ const initialState: AppState = {
   selectedIndex: 0,
   detailOpen: false,
   searchOpen: false,
+  plotY: "intelligence",
 };
 
 let state: AppState = initialState;
@@ -112,6 +115,7 @@ export function resetState(): void {
     selectedIndex: 0,
     detailOpen: false,
     searchOpen: false,
+    plotY: "intelligence",
   };
 }
 

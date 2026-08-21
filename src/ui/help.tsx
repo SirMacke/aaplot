@@ -17,9 +17,14 @@ const MODELS_BINDINGS: readonly (readonly [string, string])[] = [
   ["i c v $ t d", "sort by intel/code/value/cost/speed/release"],
 ];
 
+const PLOT_BINDINGS: readonly (readonly [string, string])[] = [
+  ["i c a t", "Y axis: intel / coding / agentic / speed"],
+];
+
 export function Help(props: { tab?: TabId }) {
-  const bindings =
-    props.tab === "models" ? [...MODELS_BINDINGS, ...GLOBAL_BINDINGS] : GLOBAL_BINDINGS;
+  const tabBindings =
+    props.tab === "models" ? MODELS_BINDINGS : props.tab === "plot" ? PLOT_BINDINGS : [];
+  const bindings = [...tabBindings, ...GLOBAL_BINDINGS];
   return (
     <Box flexDirection="column" borderStyle="round" paddingX={1}>
       <Text bold>keys</Text>

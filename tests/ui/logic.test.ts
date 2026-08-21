@@ -9,6 +9,7 @@ import {
   formatQuota,
   isNarrow,
   keyToAction,
+  listViewport,
 } from "../../src/ui/logic.js";
 
 describe("keyToAction", () => {
@@ -122,6 +123,15 @@ describe("errorMessage", () => {
   it("passes through other errors", () => {
     expect(errorMessage(new Error("boom"))).toBe("boom");
     expect(errorMessage("plain")).toBe("plain");
+  });
+});
+
+describe("listViewport", () => {
+  it("keeps the selection centered in a scrolling window", () => {
+    expect(listViewport(0, 100, 18)).toEqual({ start: 0, end: 18 });
+    expect(listViewport(17, 100, 18)).toEqual({ start: 8, end: 26 });
+    expect(listViewport(99, 100, 18)).toEqual({ start: 82, end: 100 });
+    expect(listViewport(5, 10, 18)).toEqual({ start: 0, end: 10 });
   });
 });
 

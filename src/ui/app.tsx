@@ -58,7 +58,14 @@ function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
         />
       );
     case "plot":
-      return <PlotTab models={state.data.models} ascii={props.ascii} width={props.width} />;
+      return (
+        <PlotTab
+          models={state.data.models}
+          ascii={props.ascii}
+          width={props.width}
+          yField={state.plotY}
+        />
+      );
     case "compare":
       return (
         <Placeholder

@@ -1,4 +1,5 @@
 import type { FreeModel } from "../api/schemas.js";
+import { colorizeText } from "../core/creator-colors.js";
 import { median, modelValue } from "../core/metrics.js";
 
 const BRAILLE_BASE = 0x2800;
@@ -10,6 +11,7 @@ export interface PlotPoint {
   label: string;
   x: number;
   y: number;
+  creator?: string;
 }
 
 export type YField = "intelligence" | "coding" | "agentic" | "speed";
@@ -27,6 +29,7 @@ export interface QuadrantPlotOptions {
   cornerLabels?: readonly [string, string, string, string];
   xFormat?: (value: number) => string;
   yFormat?: (value: number) => string;
+  colorize?: boolean;
 }
 
 interface ResolvedOptions {
@@ -41,6 +44,7 @@ interface ResolvedOptions {
   cornerLabels: readonly [string, string, string, string];
   xFormat: (value: number) => string;
   yFormat: (value: number) => string;
+  colorize: boolean;
 }
 
 const DEFAULT_CORNER_LABELS: readonly [string, string, string, string] = [
@@ -55,6 +59,7 @@ interface CellState {
   vline: boolean;
   hline: boolean;
   letter: string | null;
+  creator: string | null;
 }
 
 interface CanvasState {
@@ -82,6 +87,7 @@ interface PlacedMarker {
   point: PlotPoint;
   row: number;
   col: number;
+  creator: string | null;
 }
 
 interface TickRow {
@@ -114,6 +120,7 @@ function resolveOptions(options: QuadrantPlotOptions): ResolvedOptions {
     cornerLabels: options.cornerLabels ?? DEFAULT_CORNER_LABELS,
     xFormat: options.xFormat ?? ((value) => `$${compactNumber(value)}`),
     yFormat: options.yFormat ?? compactNumber,
+    colorize: options.colorize ?? false,
   };
 }
 
@@ -174,7 +181,7 @@ function blankCanvas(options: ResolvedOptions): CanvasState {
   for (let row = 0; row < options.height; row++) {
     const line: CellState[] = [];
     for (let col = 0; col < options.width; col++) {
-      line.push({ dots: 0, vline: false, hline: false, letter: null });
+      line.push({ dots: 0, vline: false, hline: false, letter: null, creator: null });
     }
     cells.push(line);
   }
@@ -281,17 +288,22 @@ function placeMarkers(canvas: CanvasState, layout: Layout, points: PlotPoint[]):
       const cell = canvas.cells[row]?.[col];
       if (cell && cell.letter === null) {
         cell.letter = letter;
-        placed.push({ letter, point, row, col });
+        cell.creator = point.creator ?? null;
+        placed.push({ letter, point, row, col, creator: point.creator ?? null });
         return;
       }
     }
-    placed.push({ letter, point, row: baseRow, col: baseCol });
+    placed.push({ letter, point, row: baseRow, col: baseCol, creator: point.creator ?? null });
   });
   return placed;
 }
 
-function renderCell(canvas: CanvasState, cell: CellState): string {
-  if (cell.letter !== null) return cell.letter;
+function renderCell(canvas: CanvasState, cell: CellState, options: ResolvedOptions): string {
+  if (cell.letter !== null) {
+    const letter = cell.letter;
+    if (options.colorize && cell.creator !== null) return colorizeText(letter, cell.creator, true);
+    return letter;
+  }
   if (canvas.braille) {
     return cell.dots > 0 ? String.fromCharCode(BRAILLE_BASE + cell.dots) : " ";
   }
@@ -404,7 +416,11 @@ function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: 
   const label = truncate(marker.point.label, modelWidth);
   const x = options.xFormat(marker.point.x);
   const y = options.yFormat(marker.point.y);
-  return `${marker.letter} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
+  const markerText =
+    options.colorize && marker.creator !== null
+      ? colorizeText(marker.letter, marker.creator, true)
+      : marker.letter;
+  return `${markerText} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
 }
 
 function legendLinesFor(placed: PlacedMarker[], options: ResolvedOptions): string[] {
@@ -500,13 +516,13 @@ export function renderQuadrantDetailed(
   const legendLines = legendLinesFor(placed, resolved);
   const cornerRows = new Set([0, resolved.height - 1]);
   const canvasRows = layout.canvas.cells.map((row) =>
-    row.map((cell) => renderCell(layout.canvas, cell)).join(""),
+    row.map((cell) => renderCell(layout.canvas, cell, resolved)).join(""),
   );
 
   lines.push(topBorder(resolved, gutterWidth, legendHeader(resolved)));
   for (let row = 0; row < resolved.height; row++) {
     const chars = (canvasRows[row] ?? "").split("");
-    if (cornerRows.has(row)) {
+    if (cornerRows.has(row) && !resolved.colorize) {
       applyCornerLabels(chars, resolved.width, row === 0, resolved);
     }
     const tick = yTicks.find((entry) => entry.row === row);
@@ -532,6 +548,7 @@ export interface ModelsPlotOptions {
   sortBy?: SortField;
   logX?: boolean;
   ascii?: boolean;
+  colorize?: boolean;
   width?: number;
   height?: number;
   title?: string;
@@ -622,6 +639,7 @@ export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions =
     label: candidate.model.slug,
     x: candidate.x,
     y: candidate.y,
+    creator: candidate.model.model_creator.name,
   }));
 
   const cornerLabels: [string, string, string, string] = [
@@ -652,6 +670,7 @@ export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOpt
     yLabel: info.yLabel,
     logX: options.logX ?? true,
     ascii: options.ascii ?? false,
+    colorize: options.colorize ?? false,
     cornerLabels: info.cornerLabels,
     xFormat: (value) => `$${compactNumber(value)}`,
   });

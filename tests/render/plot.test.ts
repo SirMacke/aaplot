@@ -79,6 +79,17 @@ describe("renderModelsQuadrant", () => {
     expect(text).toContain("speed (tok/s)");
     expect(text).toContain("cheap + fast");
   });
+
+  it("colorizes markers by creator when enabled", () => {
+    const text = renderModelsQuadrant(demoModels(), {
+      top: 5,
+      width: 40,
+      height: 12,
+      colorize: true,
+    });
+    expect(text).toContain("\x1b[1;38;5;");
+    expect(text).toContain("\x1b[0m");
+  });
 });
 
 describe("modelsToPoints", () => {
@@ -106,6 +117,11 @@ describe("modelsToPoints", () => {
     const info = modelsToPoints(demoModels(), { top: 25 });
     const labels = new Set(info.points.map((point) => point.label));
     expect(labels.size).toBe(25);
+  });
+
+  it("carries creator names for plot coloring", () => {
+    const info = modelsToPoints(demoModels(), { top: 3 });
+    expect(info.points.every((point) => typeof point.creator === "string")).toBe(true);
   });
 });
 

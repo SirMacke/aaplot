@@ -30,6 +30,62 @@ describe("freeModelsResponseSchema", () => {
     expect(parsed.data.data[0]?.slug).toBe("kestrel-1");
   });
 
+  it("accepts sparse real-world shapes with missing nullable fields", () => {
+    const parsed = freeModelSchema.safeParse({
+      id: "m1",
+      name: "Example",
+      slug: "example",
+      model_creator: { id: "c1", name: "Creator", slug: "creator" },
+      evaluations: {
+        artificial_analysis_intelligence_index: 50,
+        mmlu_pro: 0.81,
+      },
+      artificial_analysis_intelligence_index_cost: { total_cost: 12.5 },
+      pricing: {
+        price_1m_input_tokens: 1,
+        price_1m_output_tokens: 3,
+        price_1m_blended_3_to_1: 2.5,
+      },
+      performance: {
+        median_output_tokens_per_second: 120,
+      },
+    });
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(parsed.data.evaluations.artificial_analysis_coding_index).toBeNull();
+    expect(parsed.data.performance.median_time_to_first_token_seconds).toBeNull();
+    expect(parsed.data.release_date).toBeNull();
+  });
+
+  it("accepts null nested objects from the live API", () => {
+    const parsed = freeModelSchema.safeParse({
+      id: "m2",
+      name: "Unmeasured",
+      slug: "unmeasured",
+      model_creator: { id: "c1", name: "Creator" },
+      evaluations: null,
+      artificial_analysis_intelligence_index_cost: null,
+      pricing: null,
+      performance: null,
+    });
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(parsed.data.artificial_analysis_intelligence_index_cost.total_cost).toBeNull();
+    expect(parsed.data.evaluations.artificial_analysis_intelligence_index).toBeNull();
+    expect(parsed.data.pricing.price_1m_output_tokens).toBeNull();
+  });
+
+  it("coerces string intelligence index versions", () => {
+    const body = fixture("free-models-page1.json") as Record<string, unknown>;
+    const parsed = freeModelsResponseSchema.safeParse({
+      ...body,
+      intelligence_index_version: "4.1",
+    });
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(parsed.data.intelligence_index_version).toBe(4.1);
+  });
+
   it("accepts null release dates and missing cache pricing", () => {
     const body = fixture("free-models-page1.json") as {
       data: Array<{ slug: string; release_date: unknown; pricing: { slug: string } }>;
@@ -39,7 +95,7 @@ describe("freeModelsResponseSchema", () => {
     expect(parsed.success).toBe(true);
     if (!parsed.success) return;
     expect(parsed.data.release_date).toBeNull();
-    expect(parsed.data.pricing.price_1m_cache_hit_tokens).toBeUndefined();
+    expect(parsed.data.pricing.price_1m_cache_hit_tokens).toBeNull();
   });
 
   it("rejects a non-string release date", () => {
@@ -49,12 +105,15 @@ describe("freeModelsResponseSchema", () => {
     expect(freeModelSchema.safeParse(broken).success).toBe(false);
   });
 
-  it("rejects a model without pricing", () => {
+  it("fills in empty pricing when the field is missing", () => {
     const body = fixture("free-models-page1.json") as { data: unknown[] };
     const [model] = body.data;
     const { pricing: _pricing, ...rest } = model as Record<string, unknown>;
     void _pricing;
-    expect(freeModelSchema.safeParse(rest).success).toBe(false);
+    const parsed = freeModelSchema.safeParse(rest);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(parsed.data.pricing.price_1m_output_tokens).toBeNull();
   });
 });
 
