@@ -7,6 +7,7 @@ import {
   formatCurrency,
   formatNumber,
   formatRelease,
+  modelTableLayout,
   prepareModelTable,
   type ModelSortField,
 } from "../../core/models-table.js";
@@ -141,8 +142,7 @@ export function ModelsTab(props: ModelsTabProps) {
     }
   });
 
-  const nameWidth = narrow ? 22 : 24;
-  const creatorWidth = narrow ? 0 : 16;
+  const { slugWidth, creatorWidth } = modelTableLayout(props.width, narrow);
   const visibleCount = narrow ? 12 : 18;
   const { start: viewStart, end: viewEnd } = listViewport(selectedIndex, rows.length, visibleCount);
   const visibleRows = rows.slice(viewStart, viewEnd);
@@ -163,7 +163,7 @@ export function ModelsTab(props: ModelsTabProps) {
       <Text> </Text>
       <Box flexDirection="column">
         <Text bold>
-          {`${"".padEnd(1)}${"Model".padEnd(nameWidth)}${
+          {`${"".padEnd(1)}${"Slug".padEnd(slugWidth)}${
             creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : ""
           }${"Intel".padStart(6)}${narrow ? "" : "Code".padStart(6)}${"Value".padStart(7)}${
             narrow ? "" : "Cost".padStart(7)
@@ -188,7 +188,7 @@ export function ModelsTab(props: ModelsTabProps) {
             const cost = formatCurrency(model.artificial_analysis_intelligence_index_cost.total_cost);
             const speed = formatNumber(model.performance.median_output_tokens_per_second, 0);
             const release = formatRelease(model.release_date);
-            const line = `${marker}${truncate(model.name, nameWidth - 1).padEnd(nameWidth)}${
+            const line = `${marker}${truncate(model.slug, slugWidth - 1).padEnd(slugWidth)}${
               creatorWidth > 0 ? truncate(model.model_creator.name, creatorWidth - 1).padEnd(creatorWidth) : ""
             }${intel.padStart(6)}${narrow ? "" : code.padStart(6)}${value.padStart(7)}${
               narrow ? "" : cost.padStart(7)

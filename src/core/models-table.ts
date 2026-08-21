@@ -153,6 +153,25 @@ function trimZeros(text: string): string {
   return text.replace(/\.?0+$/, "").replace(/^-0$/, "0");
 }
 
+export interface ModelTableLayout {
+  slugWidth: number;
+  creatorWidth: number;
+}
+
+export function modelTableLayout(width: number, narrow: boolean): ModelTableLayout {
+  const marker = 1;
+  const intel = 6;
+  const code = narrow ? 0 : 6;
+  const value = 7;
+  const cost = narrow ? 0 : 7;
+  const speed = narrow ? 0 : 7;
+  const release = narrow ? 0 : 11;
+  const creatorWidth = narrow ? 0 : 16;
+  const fixed = marker + intel + code + value + cost + speed + release + creatorWidth;
+  const minSlug = narrow ? 18 : 32;
+  return { slugWidth: Math.max(minSlug, width - fixed - 2), creatorWidth };
+}
+
 export function activeFilterLabels(filters: ModelTableFilters): string[] {
   const labels: string[] = [];
   if (filters.creator !== null) labels.push(`creator:${filters.creator}`);

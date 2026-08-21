@@ -45,7 +45,7 @@ describe("App shell", () => {
     await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
     expect(frame).toContain("34/34");
-    expect(frame).toContain("Kestrel Flash");
+    expect(frame).toContain("kestrel-flash");
     expect(frame).toContain("quota 96/100");
     expect(frame).toContain("artificialanalysis.ai");
     expect(frame).toContain("Plot");

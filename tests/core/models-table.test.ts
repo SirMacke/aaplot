@@ -3,6 +3,7 @@ import { demoModels } from "../../src/api/demo.js";
 import {
   activeFilterLabels,
   filterModels,
+  modelTableLayout,
   prepareModelTable,
   sortModels,
   type ModelTableFilters,
@@ -60,6 +61,20 @@ describe("prepareModelTable", () => {
       false,
     );
     expect(rows).toEqual([expect.objectContaining({ slug: "kestrel-flash" })]);
+  });
+});
+
+describe("modelTableLayout", () => {
+  it("allocates remaining width to the slug column on wide terminals", () => {
+    const layout = modelTableLayout(140, false);
+    expect(layout.slugWidth).toBeGreaterThanOrEqual(32);
+    expect(layout.creatorWidth).toBe(16);
+  });
+
+  it("uses a smaller minimum slug width on narrow terminals", () => {
+    const layout = modelTableLayout(80, true);
+    expect(layout.slugWidth).toBeGreaterThanOrEqual(18);
+    expect(layout.creatorWidth).toBe(0);
   });
 });
 
