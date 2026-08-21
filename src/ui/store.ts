@@ -40,6 +40,11 @@ export interface AppState {
   detailOpen: boolean;
   searchOpen: boolean;
   plotY: YField;
+  plotPins: string[];
+  plotPinFill: boolean;
+  presetInputOpen: boolean;
+  presetInput: string;
+  presetListOpen: boolean;
 }
 
 export const initialModelsData: ModelsData = {
@@ -76,6 +81,11 @@ const initialState: AppState = {
   detailOpen: false,
   searchOpen: false,
   plotY: "intelligence",
+  plotPins: [],
+  plotPinFill: true,
+  presetInputOpen: false,
+  presetInput: "",
+  presetListOpen: false,
 };
 
 let state: AppState = initialState;
@@ -116,6 +126,11 @@ export function resetState(): void {
     detailOpen: false,
     searchOpen: false,
     plotY: "intelligence",
+    plotPins: [],
+    plotPinFill: true,
+    presetInputOpen: false,
+    presetInput: "",
+    presetListOpen: false,
   };
 }
 

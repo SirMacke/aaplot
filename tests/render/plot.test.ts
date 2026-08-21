@@ -130,6 +130,31 @@ describe("modelsToPoints", () => {
     expect(labels.size).toBe(25);
   });
 
+  it("selects pinned models before auto-filling the remainder", () => {
+    const models = demoModels();
+    const pinned = modelsToPoints(models, {
+      top: 5,
+      sortBy: "intelligence",
+      pinSlugs: ["kestrel-flash", "halcyon-s"],
+      pinFill: true,
+    });
+    expect(pinned.points.map((point) => point.label).slice(0, 2)).toEqual([
+      "kestrel-flash",
+      "halcyon-s",
+    ]);
+    expect(pinned.plotted).toBe(5);
+  });
+
+  it("plots only pinned models when fill is disabled", () => {
+    const models = demoModels();
+    const pinnedOnly = modelsToPoints(models, {
+      top: 25,
+      pinSlugs: ["kestrel-flash", "halcyon-s"],
+      pinFill: false,
+    });
+    expect(pinnedOnly.points.map((point) => point.label)).toEqual(["kestrel-flash", "halcyon-s"]);
+  });
+
   it("carries creator names for plot coloring", () => {
     const info = modelsToPoints(demoModels(), { top: 3 });
     expect(info.points.every((point) => typeof point.creator === "string")).toBe(true);

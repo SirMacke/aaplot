@@ -8,6 +8,7 @@ import { DataService } from "../core/data.js";
 import { Footer } from "./footer.js";
 import { Help } from "./help.js";
 import { cycleTab, errorMessage, isNarrow, keyToAction } from "./logic.js";
+import { loadSavedPlotPins } from "./pin-persistence.js";
 import { Onboarding } from "./onboarding.js";
 import { Placeholder } from "./placeholder.js";
 import { setState, useAppState, type ModelsData } from "./store.js";
@@ -154,6 +155,7 @@ export default function App(props: AppProps) {
     void (async () => {
       if (props.demo ?? false) {
         if (active) seedDemo();
+        if (active) await loadSavedPlotPins();
         return;
       }
       const storedKey = await keyStore.read();
@@ -164,6 +166,7 @@ export default function App(props: AppProps) {
       }
       setState({ apiKey: storedKey, screen: "loading" });
       await load(storedKey);
+      if (active) await loadSavedPlotPins();
     })();
     return () => {
       active = false;
@@ -185,6 +188,8 @@ export default function App(props: AppProps) {
       tab: state.tab,
       detailOpen: state.detailOpen,
       searchOpen: state.searchOpen,
+      presetInputOpen: state.presetInputOpen,
+      presetListOpen: state.presetListOpen,
     });
     if (action === null) return;
     switch (action.type) {

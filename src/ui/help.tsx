@@ -14,11 +14,17 @@ const MODELS_BINDINGS: readonly (readonly [string, string])[] = [
   ["/", "search models"],
   ["↑/↓", "move selection"],
   ["enter", "model detail card"],
+  ["p / space", "toggle plot pin"],
+  ["P", "pin all visible rows"],
+  ["C", "clear plot pins"],
   ["i c v $ t d", "sort by intel/code/value/cost/speed/release"],
 ];
 
 const PLOT_BINDINGS: readonly (readonly [string, string])[] = [
   ["i c a t", "Y axis: intel / coding / agentic / speed"],
+  ["f", "toggle pinned-only vs pinned+fill"],
+  ["s", "save plot preset"],
+  ["l", "load plot preset"],
 ];
 
 export function Help(props: { tab?: TabId }) {

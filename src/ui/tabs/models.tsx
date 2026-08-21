@@ -12,7 +12,9 @@ import {
   type ModelSortField,
 } from "../../core/models-table.js";
 import { isNarrow, listViewport } from "../logic.js";
-import { setState, type ModelFilters } from "../store.js";
+import { persistPlotPins } from "../pin-persistence.js";
+import { setState, useAppState, type ModelFilters } from "../store.js";
+import { normalizePlotPins, togglePlotPin } from "../../core/plot-pins.js";
 
 export interface ModelsTabProps {
   models: FreeModel[];
@@ -74,6 +76,7 @@ function DetailCard(props: { model: FreeModel }) {
 }
 
 export function ModelsTab(props: ModelsTabProps) {
+  const plotPins = useAppState().plotPins;
   const narrow = isNarrow(props.width);
   const rows = prepareModelTable(props.models, props.filters, props.sort, props.sortAsc);
   const selectedIndex = rows.length === 0 ? 0 : Math.min(props.selectedIndex, rows.length - 1);
@@ -120,6 +123,24 @@ export function ModelsTab(props: ModelsTabProps) {
       setState({ selectedIndex: Math.min(rows.length - 1, selectedIndex + 1) });
       return;
     }
+    if (input === "p" || input === " ") {
+      if (selected === null) return;
+      const nextPins = togglePlotPin(plotPins, selected.slug);
+      setState({ plotPins: nextPins });
+      void persistPlotPins();
+      return;
+    }
+    if (input === "P") {
+      const visibleSlugs = rows.map((model) => model.slug);
+      setState({ plotPins: normalizePlotPins([...plotPins, ...visibleSlugs]) });
+      void persistPlotPins();
+      return;
+    }
+    if (input === "C") {
+      setState({ plotPins: [] });
+      void persistPlotPins();
+      return;
+    }
     if (key.return && selected !== null) {
       setState({ detailOpen: true });
       return;
@@ -151,6 +172,7 @@ export function ModelsTab(props: ModelsTabProps) {
     <Box flexDirection="column">
       <Text dimColor>
         {rows.length}/{props.models.length} · sort {sortLabel}
+        {plotPins.length > 0 ? ` · ${plotPins.length} pinned` : ""}
         {filterLabels.length > 0 ? ` · ${filterLabels.join(" · ")}` : ""}
         {!props.searchOpen ? " · ? keys" : ""}
       </Text>
@@ -163,7 +185,7 @@ export function ModelsTab(props: ModelsTabProps) {
       <Text> </Text>
       <Box flexDirection="column">
         <Text bold>
-          {`${"".padEnd(1)}${"Slug".padEnd(slugWidth)}${
+          {`${"".padEnd(2)}${"Slug".padEnd(slugWidth - 1)}${
             creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : ""
           }${"Intel".padStart(6)}${narrow ? "" : "Code".padStart(6)}${"Value".padStart(7)}${
             narrow ? "" : "Cost".padStart(7)
@@ -175,6 +197,7 @@ export function ModelsTab(props: ModelsTabProps) {
           visibleRows.map((model, index) => {
             const rowIndex = viewStart + index;
             const marker = rowIndex === selectedIndex ? "▶" : " ";
+            const pin = plotPins.includes(model.slug) ? "*" : " ";
             const intel = formatNumber(model.evaluations.artificial_analysis_intelligence_index);
             const code = formatNumber(model.evaluations.artificial_analysis_coding_index);
             const value = formatNumber(
@@ -188,7 +211,7 @@ export function ModelsTab(props: ModelsTabProps) {
             const cost = formatCurrency(model.artificial_analysis_intelligence_index_cost.total_cost);
             const speed = formatNumber(model.performance.median_output_tokens_per_second, 0);
             const release = formatRelease(model.release_date);
-            const line = `${marker}${truncate(model.slug, slugWidth - 1).padEnd(slugWidth)}${
+            const line = `${marker}${pin}${truncate(model.slug, slugWidth - 2).padEnd(slugWidth - 1)}${
               creatorWidth > 0 ? truncate(model.model_creator.name, creatorWidth - 1).padEnd(creatorWidth) : ""
             }${intel.padStart(6)}${narrow ? "" : code.padStart(6)}${value.padStart(7)}${
               narrow ? "" : cost.padStart(7)

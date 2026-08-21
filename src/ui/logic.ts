@@ -29,9 +29,25 @@ export function keyToAction(
   key: KeyFlags,
   screen: Screen,
   helpOpen: boolean,
-  context: { tab?: TabId; detailOpen?: boolean; searchOpen?: boolean } = {},
+  context: {
+    tab?: TabId;
+    detailOpen?: boolean;
+    searchOpen?: boolean;
+    presetInputOpen?: boolean;
+    presetListOpen?: boolean;
+  } = {},
 ): InputAction | null {
   if (screen === "onboarding") return null;
+  if (context.presetInputOpen || context.presetListOpen) {
+    if (helpOpen) {
+      if (key.escape || input === "?") return { type: "close-overlay" };
+      if (input === "q") return { type: "quit" };
+      return null;
+    }
+    if (input === "q") return { type: "quit" };
+    if (input === "?") return { type: "toggle-help" };
+    return null;
+  }
   if (context.searchOpen || context.detailOpen) {
     if (helpOpen) {
       if (key.escape || input === "?") return { type: "close-overlay" };

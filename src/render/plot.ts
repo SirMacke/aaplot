@@ -570,6 +570,8 @@ export interface ModelsPlotOptions {
   width?: number;
   height?: number;
   title?: string;
+  pinSlugs?: string[];
+  pinFill?: boolean;
 }
 
 export interface ModelPointInfo {
@@ -653,7 +655,22 @@ export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions =
     if (aValue !== null && bValue !== null && aValue !== bValue) return bValue - aValue;
     return b.y - a.y || a.x - b.x;
   });
-  const selected = sorted.slice(0, top);
+
+  const pinSlugs = options.pinSlugs ?? [];
+  let selected = sorted.slice(0, top);
+  if (pinSlugs.length > 0) {
+    const pinSet = new Set(pinSlugs);
+    const pinned = pinSlugs
+      .map((slug) => sorted.find((candidate) => candidate.model.slug === slug))
+      .filter((candidate): candidate is (typeof sorted)[number] => candidate !== undefined);
+    if (options.pinFill ?? true) {
+      const filler = sorted.filter((candidate) => !pinSet.has(candidate.model.slug));
+      selected = [...pinned, ...filler].slice(0, top);
+    } else {
+      selected = pinned.slice(0, top);
+    }
+  }
+
   const points: PlotPoint[] = selected.map((candidate) => ({
     label: candidate.model.slug,
     x: candidate.x,
