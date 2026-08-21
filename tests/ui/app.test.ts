@@ -57,7 +57,7 @@ describe("App shell", () => {
 
     await waitForFrame(stdout, "Models");
     stdin.write("\t");
-    await waitForFrame(stdout, "cost vs intelligence quadrant");
+    await waitForFrame(stdout, "cost vs intelligence");
   });
 
   it("toggles the help overlay with ?", async () => {

@@ -13,6 +13,7 @@ import { Placeholder } from "./placeholder.js";
 import { setState, useAppState, type ModelsData } from "./store.js";
 import { TabBar } from "./tabbar.js";
 import { ModelsTab } from "./tabs/models.js";
+import { PlotTab } from "./tabs/plot.js";
 
 export interface AppProps {
   demo?: boolean;
@@ -57,13 +58,7 @@ function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
         />
       );
     case "plot":
-      return (
-        <Placeholder
-          title="Plot"
-          note="cost vs intelligence quadrant — coming after the models tab"
-          modelCount={state.data.models.length}
-        />
-      );
+      return <PlotTab models={state.data.models} ascii={props.ascii} width={props.width} />;
     case "compare":
       return (
         <Placeholder
