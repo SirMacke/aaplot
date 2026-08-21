@@ -24,7 +24,7 @@ export const MODEL_SORT_LABELS: Record<ModelSortField, string> = {
   intel: "intel",
   code: "code",
   value: "value",
-  cost: "cost",
+  cost: "idx$",
   speed: "speed",
   release: "release",
 };

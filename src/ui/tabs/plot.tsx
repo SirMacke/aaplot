@@ -1,7 +1,7 @@
 import { Box, Text, useInput } from "ink";
 import React from "react";
 import type { FreeModel } from "../../api/schemas.js";
-import { renderModelsQuadrant, type YField } from "../../render/plot.js";
+import { renderModelsQuadrant, type XField, type YField } from "../../render/plot.js";
 import { isNarrow } from "../logic.js";
 import {
   loadPlotPresets,
@@ -15,6 +15,7 @@ export interface PlotTabProps {
   ascii: boolean;
   width: number;
   yField: YField;
+  xField: XField;
 }
 
 const Y_LABELS: Record<YField, string> = {
@@ -24,9 +25,16 @@ const Y_LABELS: Record<YField, string> = {
   speed: "speed",
 };
 
+const X_LABELS: Record<XField, string> = {
+  output_price: "$/1M output",
+  index_run_cost: "index-run cost",
+};
+
 export function PlotTab(props: PlotTabProps) {
   const { plotPins, plotPinFill, presetInputOpen, presetInput, presetListOpen } = useAppState();
-  const [presets, setPresets] = React.useState<Record<string, { slugs: string[]; y?: YField }>>({});
+  const [presets, setPresets] = React.useState<
+    Record<string, { slugs: string[]; y?: YField; x?: XField }>
+  >({});
   const narrow = isNarrow(props.width);
   const plotWidth = Math.max(40, Math.min(narrow ? props.width - 4 : 60, props.width - 4));
   const plotHeight = narrow ? 16 : 22;
@@ -71,6 +79,7 @@ export function PlotTab(props: PlotTabProps) {
           setState({
             plotPins: preset.slugs,
             ...(preset.y !== undefined ? { plotY: preset.y } : {}),
+            ...(preset.x !== undefined ? { plotX: preset.x } : {}),
             presetListOpen: false,
           });
           void persistPlotPins();
@@ -88,6 +97,12 @@ export function PlotTab(props: PlotTabProps) {
     }
     if (input === "l") {
       setState({ presetListOpen: true });
+      return;
+    }
+    if (input === "$") {
+      const nextX: XField = props.xField === "output_price" ? "index_run_cost" : "output_price";
+      setState({ plotX: nextX });
+      void persistPlotPins();
       return;
     }
     const nextY: Record<string, YField> = {
@@ -111,6 +126,7 @@ export function PlotTab(props: PlotTabProps) {
     top: 25,
     sortBy: "intelligence",
     y: props.yField,
+    x: props.xField,
     colorize: !props.ascii,
     pinSlugs: usingPins ? plotPins : undefined,
     pinFill: plotPinFill,
@@ -121,7 +137,7 @@ export function PlotTab(props: PlotTabProps) {
   return (
     <Box flexDirection="column">
       <Text dimColor>
-        Y: {Y_LABELS[props.yField]} · i/c/a/t switch axis ·{" "}
+        Y: {Y_LABELS[props.yField]} · X: {X_LABELS[props.xField]} · i/c/a/t Y · $ X ·{" "}
         {usingPins
           ? `${plotPins.length} pinned${plotPinFill ? " + fill" : " only"} · f toggle fill`
           : "top 25"}{" "}

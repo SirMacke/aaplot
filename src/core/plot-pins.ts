@@ -1,6 +1,6 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { YField } from "../render/plot.js";
+import type { YField, XField } from "../render/plot.js";
 
 export const PLOT_PINS_FILE = "plot-pins.json";
 export const PLOT_PRESETS_FILE = "plot-presets.json";
@@ -9,12 +9,14 @@ export const MAX_PLOT_PINS = 25;
 export interface PlotPinsData {
   slugs: string[];
   yField?: YField;
+  xField?: XField;
   savedAt: string;
 }
 
 export interface PlotPreset {
   slugs: string[];
   y?: YField;
+  x?: XField;
 }
 
 export type PlotPresetsData = Record<string, PlotPreset>;
@@ -54,6 +56,7 @@ export class PlotPinStore {
       return {
         slugs: normalizePlotPins(raw.slugs.filter((slug) => typeof slug === "string")),
         yField: raw.yField,
+        xField: raw.xField,
         savedAt: typeof raw.savedAt === "string" ? raw.savedAt : new Date().toISOString(),
       };
     } catch {
@@ -66,6 +69,7 @@ export class PlotPinStore {
     const payload: PlotPinsData = {
       slugs: normalizePlotPins(data.slugs),
       yField: data.yField,
+      xField: data.xField,
       savedAt: data.savedAt,
     };
     await writeFile(this.pinsPath(), `${JSON.stringify(payload, null, 2)}\n`);
@@ -84,6 +88,7 @@ export class PlotPinStore {
         presets[name] = {
           slugs: normalizePlotPins(preset.slugs.filter((slug) => typeof slug === "string")),
           y: preset.y,
+          x: preset.x,
         };
       }
       return presets;

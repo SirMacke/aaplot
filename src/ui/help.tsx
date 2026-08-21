@@ -22,6 +22,7 @@ const MODELS_BINDINGS: readonly (readonly [string, string])[] = [
 
 const PLOT_BINDINGS: readonly (readonly [string, string])[] = [
   ["i c a t", "Y axis: intel / coding / agentic / speed"],
+  ["$", "X axis: output price / index-run cost"],
   ["f", "toggle pinned-only vs pinned+fill"],
   ["s", "save plot preset"],
   ["l", "load plot preset"],

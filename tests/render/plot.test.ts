@@ -80,6 +80,16 @@ describe("renderModelsQuadrant", () => {
     expect(text).toContain("cheap + fast");
   });
 
+  it("supports index-run cost on the X axis", () => {
+    const text = renderModelsQuadrant(demoModels(), {
+      x: "index_run_cost",
+      top: 10,
+      width: 40,
+      height: 12,
+    });
+    expect(text).toContain("index run cost (USD)");
+  });
+
   it("highlights outstanding models in the legend", () => {
     const text = renderModelsQuadrant(demoModels(), {
       top: 10,

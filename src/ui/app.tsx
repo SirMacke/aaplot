@@ -65,6 +65,7 @@ function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
           ascii={props.ascii}
           width={props.width}
           yField={state.plotY}
+          xField={state.plotX}
         />
       );
     case "compare":

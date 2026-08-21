@@ -15,6 +15,7 @@ export async function loadSavedPlotPins(): Promise<void> {
   setState({
     plotPins: saved.slugs,
     ...(saved.yField !== undefined ? { plotY: saved.yField } : {}),
+    ...(saved.xField !== undefined ? { plotX: saved.xField } : {}),
   });
 }
 
@@ -23,6 +24,7 @@ export async function persistPlotPins(): Promise<void> {
   await getPlotPinStore().writePins({
     slugs: state.plotPins,
     yField: state.plotY,
+    xField: state.plotX,
     savedAt: new Date().toISOString(),
   });
 }
@@ -36,7 +38,7 @@ export async function savePlotPreset(name: string): Promise<void> {
   if (trimmed === "") return;
   const state = getState();
   const presets = await loadPlotPresets();
-  presets[trimmed] = { slugs: state.plotPins, y: state.plotY };
+  presets[trimmed] = { slugs: state.plotPins, y: state.plotY, x: state.plotX };
   await getPlotPinStore().writePresets(presets);
   await persistPlotPins();
 }
@@ -47,6 +49,7 @@ export async function applyPlotPreset(name: string, presets: PlotPresetsData): P
   setState({
     plotPins: preset.slugs,
     ...(preset.y !== undefined ? { plotY: preset.y } : {}),
+    ...(preset.x !== undefined ? { plotX: preset.x } : {}),
     presetListOpen: false,
   });
   await persistPlotPins();

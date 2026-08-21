@@ -56,7 +56,7 @@ function DetailCard(props: { model: FreeModel }) {
         {formatNumber(model.evaluations.artificial_analysis_agentic_index)}
       </Text>
       <Text>
-        value {value} · index run {formatCurrency(model.artificial_analysis_intelligence_index_cost.total_cost)}
+        value {value} · index-run cost {formatCurrency(model.artificial_analysis_intelligence_index_cost.total_cost)}
       </Text>
       <Text>
         input {formatCurrency(model.pricing.price_1m_input_tokens)} · output{" "}
@@ -188,7 +188,7 @@ export function ModelsTab(props: ModelsTabProps) {
           {`${"".padEnd(2)}${"Slug".padEnd(slugWidth - 1)}${
             creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : ""
           }${"Intel".padStart(6)}${narrow ? "" : "Code".padStart(6)}${"Value".padStart(7)}${
-            narrow ? "" : "Cost".padStart(7)
+            narrow ? "" : "Idx$".padStart(7)
           }${narrow ? "" : "Speed".padStart(7)}${narrow ? "" : "Release".padStart(11)}`}
         </Text>
         {rows.length === 0 ? (

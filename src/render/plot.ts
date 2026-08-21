@@ -16,6 +16,7 @@ export interface PlotPoint {
 }
 
 export type YField = "intelligence" | "coding" | "agentic" | "speed";
+export type XField = "output_price" | "index_run_cost";
 export type SortField = "value" | YField;
 
 export interface QuadrantPlotOptions {
@@ -562,6 +563,7 @@ export function renderQuadrant(points: PlotPoint[], options: QuadrantPlotOptions
 
 export interface ModelsPlotOptions {
   y?: YField;
+  x?: XField;
   top?: number;
   sortBy?: SortField;
   logX?: boolean;
@@ -620,7 +622,18 @@ const Y_FIELD_SPECS: Record<YField, YFieldSpec> = {
   },
 };
 
-const X_LABEL = "$/1M output tokens";
+const OUTPUT_X_LABEL = "$/1M output tokens";
+const INDEX_RUN_X_LABEL = "index run cost (USD)";
+
+function xLabelFor(field: XField): string {
+  return field === "index_run_cost" ? INDEX_RUN_X_LABEL : OUTPUT_X_LABEL;
+}
+
+function xValueFor(model: FreeModel, field: XField): number | null {
+  return field === "index_run_cost"
+    ? model.artificial_analysis_intelligence_index_cost.total_cost
+    : model.pricing.price_1m_output_tokens;
+}
 
 function sortValue(sortBy: SortField, model: FreeModel): number | null {
   if (sortBy === "value") return modelValue(model);
@@ -629,15 +642,17 @@ function sortValue(sortBy: SortField, model: FreeModel): number | null {
 
 export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions = {}): ModelPointInfo {
   const yField = options.y ?? "intelligence";
+  const xField = options.x ?? "output_price";
   const spec = Y_FIELD_SPECS[yField];
   const sortBy = options.sortBy ?? "value";
   const top = options.top ?? 25;
   const logX = options.logX ?? true;
+  const xLabel = xLabelFor(xField);
 
   const candidates = models
     .map((model) => ({
       model,
-      x: model.pricing.price_1m_output_tokens,
+      x: xValueFor(model, xField),
       y: spec.value(model),
     }))
     .filter(
@@ -691,14 +706,19 @@ export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions =
     plotted: points.length,
     omitted,
     yLabel: spec.label,
-    xLabel: X_LABEL,
+    xLabel,
     cornerLabels,
-    title: options.title ?? `${spec.label} vs ${X_LABEL}${logX ? " (log)" : ""}`,
+    title: options.title ?? `${spec.label} vs ${xLabel}${logX ? " (log)" : ""}`,
     outstanding,
   };
 }
 
+function formatPlotX(value: number, xField: XField): string {
+  return xField === "index_run_cost" ? `$${compactNumber(value)}` : `$${compactNumber(value)}`;
+}
+
 export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOptions = {}): string {
+  const xField = options.x ?? "output_price";
   const info = modelsToPoints(models, options);
   return renderQuadrant(info.points, {
     width: options.width ?? 60,
@@ -711,6 +731,6 @@ export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOpt
     colorize: options.colorize ?? false,
     cornerLabels: info.cornerLabels,
     outstanding: info.outstanding,
-    xFormat: (value) => `$${compactNumber(value)}`,
+    xFormat: (value) => formatPlotX(value, xField),
   });
 }
