@@ -39,12 +39,13 @@ function mountApp(props: React.ComponentProps<typeof App>): MountResult {
 }
 
 describe("App shell", () => {
-  it("renders the demo shell with tab bar, model count, and footer", async () => {
+  it("renders the demo shell with tab bar, model table, and footer", async () => {
     const { stdout } = mountApp({ demo: true, widthOverride: 140 });
 
     await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
-    expect(frame).toContain("34 models loaded");
+    expect(frame).toContain("34/34 models");
+    expect(frame).toContain("Kestrel Flash");
     expect(frame).toContain("quota 96/100");
     expect(frame).toContain("artificialanalysis.ai");
     expect(frame).toContain("Plot");
@@ -109,7 +110,7 @@ describe("App shell", () => {
       await waitForFrame(stdout, "Paste your key");
       stdin.write("test-key-1234567890");
       stdin.write("\n");
-      await waitForFrame(stdout, "34 models loaded");
+      await waitForFrame(stdout, "34/34 models");
 
       expect(await keyStore.read()).toBe("test-key-1234567890");
       expect(fakeService.loadModels).toHaveBeenCalledWith();
@@ -139,7 +140,7 @@ describe("App shell", () => {
         serviceFactory: () => fakeService as unknown as DataService,
       });
 
-      await waitForFrame(stdout, "34 models loaded");
+      await waitForFrame(stdout, "34/34 models");
       expect(fakeService.loadModels).toHaveBeenCalled();
     } finally {
       await rm(dir, { recursive: true, force: true });

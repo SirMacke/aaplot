@@ -12,6 +12,7 @@ import { Onboarding } from "./onboarding.js";
 import { Placeholder } from "./placeholder.js";
 import { setState, useAppState, type ModelsData } from "./store.js";
 import { TabBar } from "./tabbar.js";
+import { ModelsTab } from "./tabs/models.js";
 
 export interface AppProps {
   demo?: boolean;
@@ -44,10 +45,15 @@ function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
   switch (state.tab) {
     case "models":
       return (
-        <Placeholder
-          title="Models"
-          note="sortable table with filters and detail cards — next phase"
-          modelCount={state.data.models.length}
+        <ModelsTab
+          models={state.data.models}
+          filters={state.filters}
+          sort={state.sort}
+          sortAsc={state.sortAsc}
+          selectedIndex={state.selectedIndex}
+          detailOpen={state.detailOpen}
+          searchOpen={state.searchOpen}
+          width={props.width}
         />
       );
     case "plot":
