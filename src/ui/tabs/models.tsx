@@ -11,6 +11,7 @@ import {
   prepareModelTable,
   type ModelSortField,
 } from "../../core/models-table.js";
+import { horizontalBar } from "../../render/chart.js";
 import { isNarrow, listViewport } from "../logic.js";
 import { persistPlotPins } from "../pin-persistence.js";
 import { setState, useAppState, type ModelFilters } from "../store.js";
@@ -69,6 +70,17 @@ function DetailCard(props: { model: FreeModel }) {
         speed {formatNumber(model.performance.median_output_tokens_per_second, 0)} tok/s · ttft{" "}
         {formatNumber(model.performance.median_time_to_first_token_seconds, 2)}s · e2e{" "}
         {formatNumber(model.performance.median_end_to_end_response_time_seconds, 2)}s
+      </Text>
+      <Text> </Text>
+      <Text>{horizontalBar("intel", model.evaluations.artificial_analysis_intelligence_index)}</Text>
+      <Text>{horizontalBar("code", model.evaluations.artificial_analysis_coding_index)}</Text>
+      <Text>{horizontalBar("agentic", model.evaluations.artificial_analysis_agentic_index)}</Text>
+      <Text>
+        {horizontalBar(
+          "speed",
+          model.performance.median_output_tokens_per_second,
+          { max: 500, digits: 0 },
+        )}
       </Text>
       <Text dimColor>enter or esc close</Text>
     </Box>
