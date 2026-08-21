@@ -45,7 +45,7 @@ describe("App shell", () => {
     await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
     expect(frame).toContain("34/34");
-    expect(frame).toContain("kestrel-flash");
+    expect(frame).toContain("lumen-forge-x2");
     expect(frame).toContain("quota 96/100");
     expect(frame).toContain("artificialanalysis.ai");
     expect(frame).toContain("Plot");
@@ -57,7 +57,7 @@ describe("App shell", () => {
 
     await waitForFrame(stdout, "Models");
     stdin.write("\t");
-    await waitForFrame(stdout, "Y: intelligence");
+    await waitForFrame(stdout, "intel vs");
   });
 
   it("toggles the help overlay with ?", async () => {

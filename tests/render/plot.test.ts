@@ -25,10 +25,13 @@ function golden(fixturePath: string, actual: string): void {
   expect(actual).toBe(readFileSync(fixturePath, "utf8"));
 }
 
-function withoutOutputPrice(model: FreeModel): FreeModel {
+function withoutIndexRunCost(model: FreeModel): FreeModel {
   return {
     ...model,
-    pricing: { ...model.pricing, price_1m_output_tokens: null },
+    artificial_analysis_intelligence_index_cost: {
+      ...model.artificial_analysis_intelligence_index_cost,
+      total_cost: null,
+    },
   };
 }
 
@@ -71,7 +74,7 @@ describe("renderModelsQuadrant", () => {
     expect(text).toContain("pricey + smart");
     expect(text).toContain("cheap + weaker");
     expect(text).toContain("pricey + weaker");
-    expect(text).toContain("median $/1M output tokens:");
+    expect(text).toContain("median index run cost (USD):");
   });
 
   it("supports the speed y-axis", () => {
@@ -88,6 +91,18 @@ describe("renderModelsQuadrant", () => {
       height: 12,
     });
     expect(text).toContain("index run cost (USD)");
+    expect(text).toMatch(/\$[0-9]/);
+  });
+
+  it("renders denser log-scale X tick labels", () => {
+    const text = renderModelsQuadrant(demoModels(), {
+      x: "index_run_cost",
+      top: 25,
+      width: 60,
+      height: 14,
+    });
+    const dollarTicks = text.match(/\$[0-9]/g) ?? [];
+    expect(dollarTicks.length).toBeGreaterThan(2);
   });
 
   it("highlights outstanding models in the legend", () => {
@@ -121,7 +136,7 @@ describe("modelsToPoints", () => {
     expect(info.plotted).toBe(25);
     expect(info.omitted).toBe(0);
 
-    const broken = [...models, withoutOutputPrice(models[0] as FreeModel)];
+    const broken = [...models, withoutIndexRunCost(models[0] as FreeModel)];
     const brokenInfo = modelsToPoints(broken, { top: 25, sortBy: "intelligence" });
     expect(brokenInfo.omitted).toBe(1);
   });

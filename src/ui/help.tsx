@@ -17,12 +17,12 @@ const MODELS_BINDINGS: readonly (readonly [string, string])[] = [
   ["p / space", "toggle plot pin"],
   ["P", "pin all visible rows"],
   ["C", "clear plot pins"],
-  ["i c v $ t d", "sort by intel/code/value/cost/speed/release"],
+  ["i c v $ s d", "sort by intel/code/value/idx$/speed/release"],
 ];
 
 const PLOT_BINDINGS: readonly (readonly [string, string])[] = [
   ["i c a t", "Y axis: intel / coding / agentic / speed"],
-  ["$", "X axis: output price / index-run cost"],
+  ["$ o", "X axis: index-run cost / output price"],
   ["f", "toggle pinned-only vs pinned+fill"],
   ["s", "save plot preset"],
   ["l", "load plot preset"],

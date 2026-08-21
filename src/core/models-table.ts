@@ -29,6 +29,66 @@ export const MODEL_SORT_LABELS: Record<ModelSortField, string> = {
   release: "release",
 };
 
+export const MODEL_SORT_KEYS: Record<ModelSortField, string> = {
+  intel: "i",
+  code: "c",
+  value: "v",
+  cost: "$",
+  speed: "s",
+  release: "d",
+};
+
+export const MODEL_COLUMN_HEADERS: Record<ModelSortField, string> = {
+  intel: "Intel",
+  code: "Code",
+  value: "Value",
+  cost: "Idx$",
+  speed: "Speed",
+  release: "Date",
+};
+
+export const MODEL_SORT_DESCRIPTIONS: Record<
+  ModelSortField,
+  { desc: string; asc: string }
+> = {
+  intel: { desc: "highest intel", asc: "lowest intel" },
+  code: { desc: "highest code", asc: "lowest code" },
+  value: { desc: "best value", asc: "worst value" },
+  cost: { desc: "lowest idx$", asc: "highest idx$" },
+  speed: { desc: "fastest", asc: "slowest" },
+  release: { desc: "newest", asc: "oldest" },
+};
+
+export function formatSortStatus(sort: ModelSortField, ascending: boolean): string {
+  const hint = ascending ? MODEL_SORT_DESCRIPTIONS[sort].asc : MODEL_SORT_DESCRIPTIONS[sort].desc;
+  const arrow = ascending ? "↑" : "↓";
+  return `${MODEL_SORT_LABELS[sort]} ${arrow} (${hint})`;
+}
+
+/** Vim-style: underscore before the sort-key letter when that column is active. */
+export function formatColumnHeader(
+  field: ModelSortField,
+  activeSort: ModelSortField,
+  ascending: boolean,
+  width: number,
+): string {
+  const label = MODEL_COLUMN_HEADERS[field];
+  const key = MODEL_SORT_KEYS[field];
+  let text = label;
+  if (field === activeSort) {
+    const index = label.toLowerCase().indexOf(key.toLowerCase());
+    if (index >= 0) {
+      text = `${label.slice(0, index)}_${label[index]}${label.slice(index + 1)}`;
+    } else if (key === "$") {
+      text = `${label}_$`;
+    } else {
+      text = `${label}_${key}`;
+    }
+    text += ascending ? "↑" : "↓";
+  }
+  return field === "value" || field === "cost" ? text.padStart(width) : text.padEnd(width);
+}
+
 function outputPrice(model: FreeModel): number | null {
   return model.pricing.price_1m_output_tokens;
 }
@@ -158,19 +218,11 @@ export interface ModelTableLayout {
   creatorWidth: number;
 }
 
-export function modelTableLayout(width: number, narrow: boolean): ModelTableLayout {
-  const marker = 1;
-  const pin = 1;
-  const intel = 6;
-  const code = narrow ? 0 : 6;
-  const value = 7;
-  const cost = narrow ? 0 : 7;
-  const speed = narrow ? 0 : 7;
-  const release = narrow ? 0 : 11;
-  const creatorWidth = narrow ? 0 : 16;
-  const fixed = marker + pin + intel + code + value + cost + speed + release + creatorWidth;
-  const minSlug = narrow ? 18 : 32;
-  return { slugWidth: Math.max(minSlug, width - fixed - 2), creatorWidth };
+export function modelTableLayout(_width: number, narrow: boolean): ModelTableLayout {
+  return {
+    creatorWidth: narrow ? 0 : 14,
+    slugWidth: narrow ? 16 : 22,
+  };
 }
 
 export function activeFilterLabels(filters: ModelTableFilters): string[] {

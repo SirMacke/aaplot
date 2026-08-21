@@ -3,6 +3,8 @@ import { demoModels } from "../../src/api/demo.js";
 import {
   activeFilterLabels,
   filterModels,
+  formatColumnHeader,
+  formatSortStatus,
   modelTableLayout,
   prepareModelTable,
   sortModels,
@@ -65,16 +67,29 @@ describe("prepareModelTable", () => {
 });
 
 describe("modelTableLayout", () => {
-  it("allocates remaining width to the slug column on wide terminals", () => {
+  it("uses fixed creator and slug widths on wide terminals", () => {
     const layout = modelTableLayout(140, false);
-    expect(layout.slugWidth).toBeGreaterThanOrEqual(32);
-    expect(layout.creatorWidth).toBe(16);
+    expect(layout.slugWidth).toBe(22);
+    expect(layout.creatorWidth).toBe(14);
   });
 
-  it("uses a smaller minimum slug width on narrow terminals", () => {
+  it("hides creator and uses a compact slug width on narrow terminals", () => {
     const layout = modelTableLayout(80, true);
-    expect(layout.slugWidth).toBeGreaterThanOrEqual(18);
+    expect(layout.slugWidth).toBe(16);
     expect(layout.creatorWidth).toBe(0);
+  });
+});
+
+describe("formatColumnHeader", () => {
+  it("underscores the sort-key letter on the active column", () => {
+    expect(formatColumnHeader("release", "release", false, 8)).toContain("_D");
+    expect(formatColumnHeader("release", "release", false, 8)).toContain("↓");
+  });
+});
+
+describe("formatSortStatus", () => {
+  it("describes the active sort direction in plain language", () => {
+    expect(formatSortStatus("release", false)).toBe("release ↓ (newest)");
   });
 });
 

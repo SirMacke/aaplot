@@ -5,6 +5,7 @@ import { median, modelValue } from "../core/metrics.js";
 
 const BRAILLE_BASE = 0x2800;
 const CORNER_GAP = 2;
+const LEGEND_GAP = "    ";
 const LEGEND_X_WIDTH = 7;
 const LEGEND_Y_WIDTH = 6;
 
@@ -373,13 +374,13 @@ function niceTicks(min: number, max: number, count: number): number[] {
 function logTicks(min: number, max: number): number[] {
   if (min <= 0 || max <= 0) return [];
   const ticks: number[] = [];
-  for (
-    let exponent = Math.floor(Math.log10(min));
-    exponent <= Math.ceil(Math.log10(max));
-    exponent++
-  ) {
-    const value = 10 ** exponent;
-    if (value >= min && value <= max) ticks.push(value);
+  const minExp = Math.floor(Math.log10(min));
+  const maxExp = Math.ceil(Math.log10(max));
+  for (let exponent = minExp; exponent <= maxExp; exponent++) {
+    for (const multiplier of [1, 2, 5]) {
+      const value = multiplier * 10 ** exponent;
+      if (value >= min * 0.85 && value <= max * 1.15) ticks.push(value);
+    }
   }
   return ticks;
 }
@@ -427,7 +428,7 @@ function truncate(text: string, width: number): string {
 
 function legendHeader(options: ResolvedOptions): string {
   const modelWidth = options.legendWidth - 2 - LEGEND_X_WIDTH - 1 - LEGEND_Y_WIDTH;
-  return `# ${"model".padEnd(modelWidth)}${"x".padStart(LEGEND_X_WIDTH)} ${"y".padStart(LEGEND_Y_WIDTH)}`;
+  return `# ${"model".padEnd(modelWidth)}${"x".padStart(LEGEND_X_WIDTH)} ${"y↓".padStart(LEGEND_Y_WIDTH)}`;
 }
 
 function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: number): string {
@@ -440,22 +441,36 @@ function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: 
   return `${prefix}${markerText} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
 }
 
-function legendLinesFor(placed: PlacedMarker[], options: ResolvedOptions): string[] {
+function legendLinesFor(
+  placed: PlacedMarker[],
+  options: ResolvedOptions,
+  yLabel: string,
+): string[] {
   const modelWidth = options.legendWidth - 2 - LEGEND_X_WIDTH - 1 - LEGEND_Y_WIDTH;
   const lines: string[] = [];
   const limit = options.height;
-  placed.slice(0, Math.max(0, limit - 1)).forEach((marker) => {
+  const sorted = [...placed].sort(
+    (left, right) =>
+      right.point.y - left.point.y ||
+      left.point.x - right.point.x ||
+      left.point.label.localeCompare(right.point.label),
+  );
+  sorted.slice(0, Math.max(0, limit - 1)).forEach((marker) => {
     lines.push(legendLine(marker, options, modelWidth));
   });
-  const overflow = placed.length - (limit - 1);
-  if (overflow > 0) lines.push(`… +${overflow} more`);
+  const overflow = sorted.length - (limit - 1);
+  if (overflow > 0) lines.push(`… +${overflow} more (by ${yLabel} ↓)`);
   while (lines.length < limit) lines.push("");
   return lines;
 }
 
-function topBorder(options: ResolvedOptions, gutterWidth: number, legendHeaderText: string): string {
+function topBorder(
+  options: ResolvedOptions,
+  gutterWidth: number,
+  legendHeaderText: string,
+): string {
   const border = `┌${"─".repeat(options.width)}┐`;
-  return `${" ".repeat(gutterWidth)} ${border}${legendHeaderText.length > 0 ? `  ${legendHeaderText}` : ""}`;
+  return `${" ".repeat(gutterWidth)} ${border}${legendHeaderText.length > 0 ? `${LEGEND_GAP}${legendHeaderText}` : ""}`;
 }
 
 function bottomBorder(options: ResolvedOptions, gutterWidth: number, xTicks: TickCol[]): string {
@@ -468,13 +483,20 @@ function bottomBorder(options: ResolvedOptions, gutterWidth: number, xTicks: Tic
 
 function xTickLabelLine(options: ResolvedOptions, gutterWidth: number, xTicks: TickCol[]): string {
   const chars = Array.from({ length: options.width }, () => " ");
-  let previousEnd = -2;
+  const placed: Array<{ start: number; end: number }> = [];
   for (const tick of xTicks) {
-    const start = Math.max(0, tick.col - Math.floor(tick.label.length / 2));
-    const end = start + tick.label.length - 1;
-    if (start <= previousEnd) continue;
-    writeAt(chars, start, tick.label);
-    previousEnd = end;
+    const label = tick.label;
+    let start = Math.max(0, tick.col - Math.floor(label.length / 2));
+    let end = start + label.length - 1;
+    for (const prior of placed) {
+      if (start <= prior.end + 1) {
+        start = prior.end + 2;
+        end = start + label.length - 1;
+      }
+    }
+    if (end >= options.width) continue;
+    writeAt(chars, start, label);
+    placed.push({ start, end });
   }
   return `${" ".repeat(gutterWidth)} ${chars.join("")}`;
 }
@@ -532,7 +554,7 @@ export function renderQuadrantDetailed(
   const yTicks = computeYTickRows(valid, resolved, layout);
   const xTicks = computeXTickCols(valid, resolved, layout);
   const gutterWidth = gutterWidthFor(yTicks.map((tick) => tick.label));
-  const legendLines = legendLinesFor(placed, resolved);
+  const legendLines = legendLinesFor(placed, resolved, resolved.yLabel);
   const cornerRows = new Set([0, resolved.height - 1]);
   const canvasRows = layout.canvas.cells.map((row) =>
     row.map((cell) => renderCell(layout.canvas, cell, resolved)).join(""),
@@ -547,7 +569,7 @@ export function renderQuadrantDetailed(
     const tick = yTicks.find((entry) => entry.row === row);
     const gutter = (tick?.label ?? "").padStart(gutterWidth);
     const legend = legendLines[row] ?? "";
-    const line = `${gutter} ${chars.join("")}${legend.length > 0 ? `  ${legend}` : ""}`;
+    const line = `${gutter} ${chars.join("")}${legend.length > 0 ? `${LEGEND_GAP}${legend}` : ""}`;
     lines.push(line.trimEnd());
   }
   lines.push(bottomBorder(resolved, gutterWidth, xTicks));
@@ -642,7 +664,7 @@ function sortValue(sortBy: SortField, model: FreeModel): number | null {
 
 export function modelsToPoints(models: FreeModel[], options: ModelsPlotOptions = {}): ModelPointInfo {
   const yField = options.y ?? "intelligence";
-  const xField = options.x ?? "output_price";
+  const xField = options.x ?? "index_run_cost";
   const spec = Y_FIELD_SPECS[yField];
   const sortBy = options.sortBy ?? "value";
   const top = options.top ?? 25;
@@ -718,7 +740,7 @@ function formatPlotX(value: number, xField: XField): string {
 }
 
 export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOptions = {}): string {
-  const xField = options.x ?? "output_price";
+  const xField = options.x ?? "index_run_cost";
   const info = modelsToPoints(models, options);
   return renderQuadrant(info.points, {
     width: options.width ?? 60,

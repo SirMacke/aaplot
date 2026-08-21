@@ -1,30 +1,30 @@
-Intelligence Index vs $/1M output tokens (log)
+Intelligence Index vs index run cost (USD) (log)
 
-      ┌────────────────────────────────────────────────────────────┐  # model                x      y
-        cheap + smart                    ⢸        pricey + smart    ★[1;4mA[0m lumen-forge-x2     $60   77.9
-                                         ⢸                     [1;4mA[0m    ★[1;4mB[0m quarry-frontier    $40   76.5
-                                         ⢸                 [1;4mB[0m        ★[1;4mC[0m nimbus-omni        $25   74.2
-   75                                    ⢸                          ★[1;4mD[0m kestrel-1-max      $15   71.8
-                                         ⢸             [1;4mC[0m            ★[1;4mE[0m halcyon-pro      $12.5   70.6
-                                         ⢸                          ★[1;4mF[0m nimbus-quant       $11     70
-                                         ⢸        [1;4mD[0m                 ★[1;4mG[0m bramble-72b       $8.5   69.4
-   70                                    ⢸     [1;4mF[0m [1;4mE[0m                  ★[1;4mH[0m kestrel-orbit     $7.5   68.1
-                                         ⢸   [1;4mG[0m                      ★[1;4mI[0m quarry-blend        $6   67.3
-                                         ⢸  [1;4mH[0m                       ★[1;4mJ[0m lumen-axis        $5.5   66.8
-                                         [1;4mJ[0m[1;4mI[0m                         ★[1;4mK[0m halcyon-studio    $4.5     66
-                                       [1;4mK[0m ⢸                          ★[1;4mL[0m halcyon-t         $1.2   65.1
-   65 ⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒[1;4mL[0m⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒M⠒⠒⢺⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒   M nimbus-flow       $3.8   64.7
-                        [1;4mN[0m          O     ⢸                          ★[1;4mN[0m nimbus-mini-3     $0.9   63.8
-                                 P       ⢸                           O bramble-path      $2.9   63.5
-                     [1;4mQ[0m                   ⢸                           P kestrel-1-mid     $2.4   62.9
-   60              [1;4mS[0m          T          ⢸                   R      ★[1;4mQ[0m kestrel-1         $0.6   61.2
-                                         ⢸              U            R lumen-titan-2      $50   60.4
-                [1;4mV[0m                        ⢸                          ★[1;4mS[0m lumen-lite        $0.5     60
-                         W               ⢸                           T quarry-pulse      $1.6   59.8
-   55                                    ⢸                X          U halcyon-max        $28   58.6
-                                         ⢸                          ★[1;4mV[0m quarry-8b        $0.35   57.4
-        [1;4mY[0m                                ⢸                           W halcyon-drift    $0.95   56.3
-        cheap + weaker                   ⢸       pricey + weaker    … +2 more
-      └──────────────────┴─────────────────────┴─────────────────┘
-                        $1                    $10
-n=25/25  median $/1M output tokens: $5.5  median Intelligence Index: 64.7  ★ 17 outstanding
+      ┌────────────────────────────────────────────────────────────┐    # model                x     y↓
+        cheap + smart                    ⢸        pricey + smart      ★[1;4mA[0m lumen-forge-x2    $260   77.9
+                                         ⢸                     [1;4mA[0m      ★[1;4mB[0m quarry-frontier   $210   76.5
+                                         ⢸                   [1;4mB[0m        ★[1;4mC[0m nimbus-omni       $130   74.2
+   75                                    ⢸                            ★[1;4mD[0m kestrel-1-max      $95   71.8
+                                         ⢸              [1;4mC[0m             ★[1;4mE[0m halcyon-pro        $88   70.6
+                                         ⢸                            ★[1;4mF[0m nimbus-quant       $58     70
+                                         ⢸           [1;4mD[0m                 G bramble-72b        $72   69.4
+   70                                    ⢸      [1;4mF[0m   [1;4mE[0m                 ★[1;4mH[0m kestrel-orbit      $42   68.1
+                                         ⢸        G                   ★[1;4mI[0m quarry-blend       $34   67.3
+                                         ⢸   [1;4mH[0m                        ★[1;4mJ[0m lumen-axis         $30   66.8
+                                         [1;4mJ[0m [1;4mI[0m                          ★[1;4mK[0m halcyon-studio     $26     66
+                                        [1;4mK[0m⢸                            ★[1;4mL[0m halcyon-t         $6.9   65.1
+   65 ⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒[1;4mL[0m⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒M⠒⠒⠒⢺⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒     M nimbus-flow        $20   64.7
+                      [1;4mN[0m            O     ⢸                            ★[1;4mN[0m nimbus-mini-3     $4.6   63.8
+                                  P      ⢸                             O bramble-path       $16   63.5
+                  [1;4mQ[0m                      ⢸                             P kestrel-1-mid      $14   62.9
+   60              S         T           ⢸                    R       ★[1;4mQ[0m kestrel-1         $3.1   61.2
+                                         ⢸                U            R lumen-titan-2     $230   60.4
+               [1;4mV[0m                         ⢸                             S lumen-lite        $3.4     60
+                        W                ⢸                             T quarry-pulse        $9   59.8
+   55                                    ⢸                  X          U halcyon-max       $165   58.6
+                                         ⢸                            ★[1;4mV[0m quarry-8b         $2.2   57.4
+        [1;4mY[0m                                ⢸                             W halcyon-drift     $5.2   56.3
+        cheap + weaker                   ⢸       pricey + weaker      … +2 more (by Intelligence Index ↓)
+      └┴──────┴────────┴──────┴──────┴────────┴──────┴──────┴────┘
+      $1     $2       $5     $10    $20      $50   $100   $200
+n=25/25  median index run cost (USD): $30  median Intelligence Index: 64.7  ★ 15 outstanding

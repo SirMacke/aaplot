@@ -2,11 +2,13 @@ import { Box, Text, useInput } from "ink";
 import React from "react";
 import type { FreeModel } from "../../api/schemas.js";
 import {
-  MODEL_SORT_LABELS,
+  MODEL_SORT_KEYS,
   activeFilterLabels,
+  formatColumnHeader,
   formatCurrency,
   formatNumber,
   formatRelease,
+  formatSortStatus,
   modelTableLayout,
   prepareModelTable,
   type ModelSortField,
@@ -87,6 +89,15 @@ function DetailCard(props: { model: FreeModel }) {
   );
 }
 
+const SORT_KEY_MAP: Record<string, ModelSortField> = {
+  i: "intel",
+  c: "code",
+  v: "value",
+  $: "cost",
+  s: "speed",
+  d: "release",
+};
+
 export function ModelsTab(props: ModelsTabProps) {
   const plotPins = useAppState().plotPins;
   const narrow = isNarrow(props.width);
@@ -94,7 +105,7 @@ export function ModelsTab(props: ModelsTabProps) {
   const selectedIndex = rows.length === 0 ? 0 : Math.min(props.selectedIndex, rows.length - 1);
   const selected = rows[selectedIndex] ?? null;
   const filterLabels = activeFilterLabels(props.filters);
-  const sortLabel = `${MODEL_SORT_LABELS[props.sort]}${props.sortAsc ? " ↑" : " ↓"}`;
+  const sortStatus = formatSortStatus(props.sort, props.sortAsc);
 
   useInput((input, key) => {
     if (props.detailOpen) {
@@ -157,15 +168,7 @@ export function ModelsTab(props: ModelsTabProps) {
       setState({ detailOpen: true });
       return;
     }
-    const sortKeys: Record<string, ModelSortField> = {
-      i: "intel",
-      c: "code",
-      v: "value",
-      $: "cost",
-      t: "speed",
-      d: "release",
-    };
-    const nextSort = sortKeys[input];
+    const nextSort = SORT_KEY_MAP[input];
     if (nextSort !== undefined) {
       setState({
         sort: nextSort,
@@ -180,13 +183,24 @@ export function ModelsTab(props: ModelsTabProps) {
   const { start: viewStart, end: viewEnd } = listViewport(selectedIndex, rows.length, visibleCount);
   const visibleRows = rows.slice(viewStart, viewEnd);
 
+  const header =
+    `${"".padEnd(2)}` +
+    (creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : "") +
+    `${"Slug".padEnd(slugWidth)}` +
+    formatColumnHeader("intel", props.sort, props.sortAsc, 6) +
+    (narrow ? "" : formatColumnHeader("code", props.sort, props.sortAsc, 6)) +
+    formatColumnHeader("value", props.sort, props.sortAsc, 7) +
+    (narrow ? "" : formatColumnHeader("cost", props.sort, props.sortAsc, 7)) +
+    (narrow ? "" : formatColumnHeader("speed", props.sort, props.sortAsc, 7)) +
+    (narrow ? "" : formatColumnHeader("release", props.sort, props.sortAsc, 8));
+
   return (
     <Box flexDirection="column">
       <Text dimColor>
-        {rows.length}/{props.models.length} · sort {sortLabel}
+        {rows.length}/{props.models.length} · sorted by {sortStatus}
         {plotPins.length > 0 ? ` · ${plotPins.length} pinned` : ""}
         {filterLabels.length > 0 ? ` · ${filterLabels.join(" · ")}` : ""}
-        {!props.searchOpen ? " · ? keys" : ""}
+        {!props.searchOpen ? ` · sort: ${Object.values(MODEL_SORT_KEYS).join(" ")} · ? keys` : ""}
       </Text>
       {props.searchOpen ? (
         <Text>
@@ -196,13 +210,7 @@ export function ModelsTab(props: ModelsTabProps) {
       ) : null}
       <Text> </Text>
       <Box flexDirection="column">
-        <Text bold>
-          {`${"".padEnd(2)}${"Slug".padEnd(slugWidth - 1)}${
-            creatorWidth > 0 ? "Creator".padEnd(creatorWidth) : ""
-          }${"Intel".padStart(6)}${narrow ? "" : "Code".padStart(6)}${"Value".padStart(7)}${
-            narrow ? "" : "Idx$".padStart(7)
-          }${narrow ? "" : "Speed".padStart(7)}${narrow ? "" : "Release".padStart(11)}`}
-        </Text>
+        <Text bold>{header}</Text>
         {rows.length === 0 ? (
           <Text dimColor>no models match the current filters</Text>
         ) : (
@@ -223,11 +231,18 @@ export function ModelsTab(props: ModelsTabProps) {
             const cost = formatCurrency(model.artificial_analysis_intelligence_index_cost.total_cost);
             const speed = formatNumber(model.performance.median_output_tokens_per_second, 0);
             const release = formatRelease(model.release_date);
-            const line = `${marker}${pin}${truncate(model.slug, slugWidth - 2).padEnd(slugWidth - 1)}${
-              creatorWidth > 0 ? truncate(model.model_creator.name, creatorWidth - 1).padEnd(creatorWidth) : ""
-            }${intel.padStart(6)}${narrow ? "" : code.padStart(6)}${value.padStart(7)}${
-              narrow ? "" : cost.padStart(7)
-            }${narrow ? "" : speed.padStart(7)}${narrow ? "" : release.padStart(11)}`;
+            const line =
+              `${marker}${pin}` +
+              (creatorWidth > 0
+                ? truncate(model.model_creator.name, creatorWidth - 1).padEnd(creatorWidth)
+                : "") +
+              `${truncate(model.slug, slugWidth - 1).padEnd(slugWidth)}` +
+              `${intel.padStart(6)}` +
+              `${narrow ? "" : code.padStart(6)}` +
+              `${value.padStart(7)}` +
+              `${narrow ? "" : cost.padStart(7)}` +
+              `${narrow ? "" : speed.padStart(7)}` +
+              `${narrow ? "" : release.padStart(8)}`;
             return (
               <Text key={model.id} inverse={rowIndex === selectedIndex && !props.detailOpen}>
                 {line}
