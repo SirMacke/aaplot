@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { FreeModel, RateLimit } from "../api/schemas.js";
+import type { ArenaEntry, FreeModel, RateLimit, MediaArenaKind } from "../api/schemas.js";
 import type { ModelSortField } from "../core/models-table.js";
 import type { YField, XField } from "../render/plot.js";
 
@@ -13,6 +13,7 @@ export interface ModelsData {
   storedAt: number | null;
   fromCache: boolean;
   stale: boolean;
+  arenas: Partial<Record<MediaArenaKind, ArenaEntry[]>>;
 }
 
 export interface ModelFilters {
@@ -46,6 +47,8 @@ export interface AppState {
   presetInputOpen: boolean;
   presetInput: string;
   presetListOpen: boolean;
+  mediaArena: MediaArenaKind;
+  mediaSelectedIndex: number;
 }
 
 export const initialModelsData: ModelsData = {
@@ -55,6 +58,7 @@ export const initialModelsData: ModelsData = {
   storedAt: null,
   fromCache: false,
   stale: false,
+  arenas: {},
 };
 
 export const initialFilters: ModelFilters = {
@@ -88,6 +92,8 @@ const initialState: AppState = {
   presetInputOpen: false,
   presetInput: "",
   presetListOpen: false,
+  mediaArena: "tts",
+  mediaSelectedIndex: 0,
 };
 
 let state: AppState = initialState;
@@ -134,6 +140,8 @@ export function resetState(): void {
     presetInputOpen: false,
     presetInput: "",
     presetListOpen: false,
+    mediaArena: "tts",
+    mediaSelectedIndex: 0,
   };
 }
 

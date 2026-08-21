@@ -1,5 +1,5 @@
-import { ApiClient, ApiError, type FreeModelsResult } from "../api/client.js";
-import { FREE_MODELS_PATH, type RateLimit } from "../api/schemas.js";
+import { ApiClient, ApiError, type ArenaResult, type FreeModelsResult } from "../api/client.js";
+import { FREE_MODELS_PATH, mediaArenaPaths, type MediaArenaKind, type RateLimit } from "../api/schemas.js";
 import { FileCache } from "./cache.js";
 
 export interface ModelsSnapshot {
@@ -9,6 +9,7 @@ export interface ModelsSnapshot {
   storedAt: number;
   fromCache: boolean;
   stale: boolean;
+  arenas: Partial<Record<MediaArenaKind, ArenaResult["entries"]>>;
 }
 
 export interface DataServiceOptions {
@@ -40,6 +41,29 @@ export class DataService {
         ...(options.sleepFn !== undefined ? { sleepFn: options.sleepFn } : {}),
         ...(options.baseUrl !== undefined ? { baseUrl: options.baseUrl } : {}),
       });
+  }
+
+  async loadArena(kind: MediaArenaKind): Promise<{ entries: ArenaResult["entries"]; rateLimit: RateLimit | null; fromCache: boolean }> {
+    const path = mediaArenaPaths[kind];
+    const cached = await this.cache.get<ArenaResult>(path);
+    if (cached !== null && cached.fresh) {
+      return { entries: cached.data.entries, rateLimit: cached.rateLimit, fromCache: true };
+    }
+    if (this.offline) {
+      if (cached !== null) return { entries: cached.data.entries, rateLimit: cached.rateLimit, fromCache: true };
+      throw new ApiError("offline and no cached arena data", "network");
+    }
+    if (cached !== null && (cached.rateLimit?.remaining ?? Infinity) <= 0) {
+      return { entries: cached.data.entries, rateLimit: cached.rateLimit, fromCache: true };
+    }
+    try {
+      const result = await this.client.getArena(kind);
+      await this.cache.set(path, result, result.rateLimit);
+      return { entries: result.entries, rateLimit: result.rateLimit, fromCache: false };
+    } catch (error) {
+      if (cached !== null) return { entries: cached.data.entries, rateLimit: cached.rateLimit, fromCache: true };
+      throw error;
+    }
   }
 
   async loadModels(): Promise<ModelsSnapshot> {
@@ -78,5 +102,6 @@ function snapshotFrom(
     storedAt,
     fromCache,
     stale,
+    arenas: {},
   };
 }

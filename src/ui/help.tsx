@@ -28,9 +28,20 @@ const PLOT_BINDINGS: readonly (readonly [string, string])[] = [
   ["l", "load plot preset"],
 ];
 
+const MEDIA_BINDINGS: readonly (readonly [string, string])[] = [
+  ["←/→", "switch arena (TTS, image, video, …)"],
+  ["↑/↓", "move selection"],
+];
+
 export function Help(props: { tab?: TabId }) {
   const tabBindings =
-    props.tab === "models" ? MODELS_BINDINGS : props.tab === "plot" ? PLOT_BINDINGS : [];
+    props.tab === "models"
+      ? MODELS_BINDINGS
+      : props.tab === "plot"
+        ? PLOT_BINDINGS
+        : props.tab === "media"
+          ? MEDIA_BINDINGS
+          : [];
   const bindings = [...tabBindings, ...GLOBAL_BINDINGS];
   return (
     <Box flexDirection="column" borderStyle="round" paddingX={1}>

@@ -1,7 +1,7 @@
 import { Box, Text, useApp, useInput, useStdout } from "ink";
 import React from "react";
 import { ApiError } from "../api/client.js";
-import { demoModels } from "../api/demo.js";
+import { demoModels, demoArenas } from "../api/demo.js";
 import { FileCache } from "../core/cache.js";
 import { KeyStore, getConfigPaths } from "../core/config.js";
 import { DataService } from "../core/data.js";
@@ -11,8 +11,9 @@ import { cycleTab, errorMessage, isNarrow, keyToAction } from "./logic.js";
 import { loadSavedPlotPins } from "./pin-persistence.js";
 import { Onboarding } from "./onboarding.js";
 import { Placeholder } from "./placeholder.js";
-import { setState, useAppState, type ModelsData } from "./store.js";
+import { setState, useAppState, getState, type ModelsData } from "./store.js";
 import { TabBar } from "./tabbar.js";
+import { MediaTab } from "./tabs/media.js";
 import { ModelsTab } from "./tabs/models.js";
 import { PlotTab } from "./tabs/plot.js";
 
@@ -38,11 +39,18 @@ function seedDemo() {
     storedAt: now,
     fromCache: false,
     stale: false,
+    arenas: demoArenas(),
   };
   setState({ screen: "main", demo: true, error: null, data });
 }
 
-function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
+function TabContent(props: {
+  narrow: boolean;
+  width: number;
+  ascii: boolean;
+  demo: boolean;
+  onLoadArena: (kind: import("../api/schemas.js").MediaArenaKind) => void;
+}) {
   const state = useAppState();
   switch (state.tab) {
     case "models":
@@ -78,10 +86,13 @@ function TabContent(props: { narrow: boolean; width: number; ascii: boolean }) {
       );
     case "media":
       return (
-        <Placeholder
-          title="Media"
-          note="arena Elo tables (TTS, image, video, music) — later"
-          modelCount={0}
+        <MediaTab
+          arenas={state.data.arenas}
+          arena={state.mediaArena}
+          selectedIndex={state.mediaSelectedIndex}
+          width={props.width}
+          demo={props.demo}
+          onLoadArena={props.onLoadArena}
         />
       );
   }
@@ -121,6 +132,7 @@ export default function App(props: AppProps) {
             storedAt: snapshot.storedAt,
             fromCache: snapshot.fromCache,
             stale: snapshot.stale,
+            arenas: snapshot.arenas,
           },
         });
       } catch (error) {
@@ -137,6 +149,28 @@ export default function App(props: AppProps) {
       }
     },
     [keyStore, makeService],
+  );
+
+  const loadArena = React.useCallback(
+    async (kind: import("../api/schemas.js").MediaArenaKind) => {
+      if (state.demo) return;
+      const apiKey = state.apiKey;
+      if (apiKey === null) return;
+      try {
+        const result = await makeService(apiKey).loadArena(kind);
+        const current = getState();
+        setState({
+          data: {
+            ...current.data,
+            arenas: { ...current.data.arenas, [kind]: result.entries },
+            rateLimit: result.rateLimit ?? current.data.rateLimit,
+          },
+        });
+      } catch (error) {
+        setState({ error: errorMessage(error) });
+      }
+    },
+    [makeService, state.apiKey, state.demo],
   );
 
   React.useEffect(() => {
@@ -252,7 +286,15 @@ export default function App(props: AppProps) {
     <Box flexDirection="column" flexGrow={1}>
       <TabBar active={state.tab} width={width} />
       <Box flexGrow={1}>
-        <TabContent narrow={isNarrow(width)} width={width} ascii={state.ascii} />
+        <TabContent
+          narrow={isNarrow(width)}
+          width={width}
+          ascii={state.ascii}
+          demo={state.demo}
+          onLoadArena={(kind) => {
+            void loadArena(kind);
+          }}
+        />
       </Box>
       {state.helpOpen ? <Help tab={state.tab} /> : null}
       <Footer

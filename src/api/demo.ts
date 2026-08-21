@@ -1,4 +1,4 @@
-import type { FreeModel, FreeModelsResponse } from "./schemas.js";
+import type { ArenaEntry, FreeModel, FreeModelsResponse, MediaArenaKind } from "./schemas.js";
 
 interface DemoSeed {
   slug: string;
@@ -93,5 +93,60 @@ export function demoModelsResponse(): FreeModelsResponse {
     intelligence_index_version: 4.1,
     pagination: { page: 1, page_size: 200, total_pages: 1, has_more: false },
     data: demoModels(),
+  };
+}
+
+const ARENA_SEEDS: Record<MediaArenaKind, Array<{ slug: string; name: string; creator: string; elo: number; ci: number | null }>> = {
+  tts: [
+    { slug: "voiceforge-tts-2", name: "VoiceForge TTS 2", creator: "VoiceForge", elo: 1240, ci: 22 },
+    { slug: "chime-studio", name: "Chime Studio", creator: "Chime", elo: 1187, ci: 19 },
+    { slug: "echovox-mini", name: "EchoVox Mini", creator: "EchoVox", elo: 1102, ci: null },
+  ],
+  image: [
+    { slug: "pixel-forge-xl", name: "PixelForge XL", creator: "PixelForge", elo: 1312, ci: 18 },
+    { slug: "canvas-prime", name: "Canvas Prime", creator: "Canvas AI", elo: 1264, ci: 21 },
+    { slug: "sketch-lite", name: "Sketch Lite", creator: "Sketch Labs", elo: 1198, ci: 16 },
+  ],
+  video: [
+    { slug: "reel-maker-pro", name: "ReelMaker Pro", creator: "ReelMaker", elo: 1288, ci: 24 },
+    { slug: "motion-mini", name: "Motion Mini", creator: "Motion AI", elo: 1210, ci: 20 },
+    { slug: "clip-forge", name: "ClipForge", creator: "ClipForge", elo: 1156, ci: null },
+  ],
+  img2vid: [
+    { slug: "frameflow-1", name: "FrameFlow 1", creator: "FrameFlow", elo: 1225, ci: 17 },
+    { slug: "animatrix-s", name: "Animatrix S", creator: "Animatrix", elo: 1174, ci: 19 },
+    { slug: "vid-bridge", name: "VidBridge", creator: "Bridge Media", elo: 1099, ci: 15 },
+  ],
+  "music-instrumental": [
+    { slug: "symphonia-i", name: "Symphonia I", creator: "Symphonia", elo: 1201, ci: 14 },
+    { slug: "beat-lab", name: "Beat Lab", creator: "Beat Lab", elo: 1144, ci: 18 },
+    { slug: "tone-craft", name: "ToneCraft", creator: "ToneCraft", elo: 1088, ci: null },
+  ],
+  "music-vocals": [
+    { slug: "aria-vox", name: "Aria Vox", creator: "Aria", elo: 1233, ci: 20 },
+    { slug: "chorus-mini", name: "Chorus Mini", creator: "Chorus", elo: 1167, ci: 17 },
+    { slug: "verse-forge", name: "VerseForge", creator: "VerseForge", elo: 1115, ci: 16 },
+  ],
+};
+
+export function demoArena(kind: MediaArenaKind): ArenaEntry[] {
+  return ARENA_SEEDS[kind].map((seed, index) => ({
+    id: `demo-arena-${kind}-${index + 1}`,
+    name: seed.name,
+    slug: seed.slug,
+    model_creator: { id: `demo-arena-creator-${seed.creator}`, name: seed.creator },
+    elo: seed.elo,
+    ci_95: seed.ci,
+  }));
+}
+
+export function demoArenas(): Record<MediaArenaKind, ArenaEntry[]> {
+  return {
+    tts: demoArena("tts"),
+    image: demoArena("image"),
+    video: demoArena("video"),
+    img2vid: demoArena("img2vid"),
+    "music-instrumental": demoArena("music-instrumental"),
+    "music-vocals": demoArena("music-vocals"),
   };
 }
