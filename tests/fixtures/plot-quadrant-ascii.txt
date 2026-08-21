@@ -1,0 +1,30 @@
+Intelligence Index vs $/1M output tokens (log)
+
+      ┌────────────────────────────────────────────────────────────┐  # model                x      y
+        cheap + smart                    |        pricey + smart    A lumen-forge-x2     $60   77.9
+                                         |                     A    B quarry-frontier    $40   76.5
+                                         |                 B        C nimbus-omni        $25   74.2
+   75                                    |                          D kestrel-1-max      $15   71.8
+                                         |             C            E halcyon-pro      $12.5   70.6
+                                         |                          F nimbus-quant       $11     70
+                                         |        D                 G bramble-72b       $8.5   69.4
+                                         |       E                  H kestrel-orbit     $7.5   68.1
+   70                                    |   G F                    I quarry-blend        $6   67.3
+                                         |  H                       J lumen-axis        $5.5   66.8
+                                         JI                         K halcyon-studio    $4.5     66
+                                       K |                          L halcyon-t         $1.2   65.1
+   65 ---------------------L----------M--+------------------------  M nimbus-flow       $3.8   64.7
+                         N       P O     |                          N nimbus-mini-3     $0.9   63.8
+                                         |                          O bramble-path      $2.9   63.5
+                     Q                   |                          P kestrel-1-mid     $2.4   62.9
+   60              S          T          |                   R      Q kestrel-1         $0.6   61.2
+                                         |              U           R lumen-titan-2      $50   60.4
+                V                        |                          S lumen-lite        $0.5     60
+                         W               |                          T quarry-pulse      $1.6   59.8
+   55                                    |                X         U halcyon-max        $28   58.6
+                                         |                          V quarry-8b        $0.35   57.4
+        Y                                |                          W halcyon-drift    $0.95   56.3
+        cheap + weaker                   |       pricey + weaker    … +2 more
+      └──────────────────┴────────────────────┴──────────────────┘
+                        $1                   $10
+n=25/25  median $/1M output tokens: $5.5  median Intelligence Index: 64.7
