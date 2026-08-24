@@ -68,13 +68,13 @@ function ArenaSwitcher(props: { arena: MediaArenaKind; narrow: boolean }) {
           {MEDIA_ARENA_KINDS.map((kind, index) => (
             <React.Fragment key={kind}>
               {index > 0 ? <Text dimColor> · </Text> : null}
-              <Text
-                color={kind === props.arena ? "cyan" : undefined}
-                bold={kind === props.arena}
-                underline={kind === props.arena}
-              >
-                {MEDIA_ARENA_LABELS[kind]}
-              </Text>
+              {kind === props.arena ? (
+                <Text color="cyan" bold underline>
+                  {MEDIA_ARENA_LABELS[kind]}
+                </Text>
+              ) : (
+                <Text>{MEDIA_ARENA_LABELS[kind]}</Text>
+              )}
             </React.Fragment>
           ))}
         </Text>
@@ -132,7 +132,7 @@ export function MediaTab(props: MediaTabProps) {
             (narrow ? "" : `${"CI±".padStart(5)}`)}
         </Text>
         {entries.length === 0 ? (
-          <Text dimColor>no arena data loaded — press r to refresh</Text>
+          <Text dimColor>no arena data loaded yet</Text>
         ) : (
           visibleRows.map((entry, index) => {
             const rowIndex = viewStart + index;

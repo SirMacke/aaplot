@@ -9,6 +9,12 @@ describe("horizontalBar", () => {
     expect(line).toContain("40");
   });
 
+  it("trims trailing zeros on bar labels", () => {
+    const line = horizontalBar("intel", 70, { width: 10 });
+    expect(line).toContain("70");
+    expect(line).not.toContain("70.0");
+  });
+
   it("renders a placeholder for null values", () => {
     expect(horizontalBar("code", null)).toContain("—");
   });

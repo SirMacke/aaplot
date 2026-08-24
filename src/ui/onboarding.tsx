@@ -10,6 +10,7 @@ export function Onboarding(props: OnboardingProps) {
   const [draft, setDraft] = React.useState("");
   useInput((input, key) => {
     if (key.escape) return;
+    if (input === "q") return;
     if (key.return || input === "\r" || input === "\n") {
       setDraft((current) => {
         const trimmed = current.trim();
@@ -42,7 +43,7 @@ export function Onboarding(props: OnboardingProps) {
       <Text color="cyan">{masked}</Text>
       {props.error !== null ? <Text color="red">{props.error}</Text> : null}
       <Text> </Text>
-      <Text dimColor>enter save · backspace edit · ctrl+c quit</Text>
+      <Text dimColor>enter save · backspace edit · q or ctrl+c quit</Text>
     </Box>
   );
 }

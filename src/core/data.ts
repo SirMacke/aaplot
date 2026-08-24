@@ -43,10 +43,14 @@ export class DataService {
       });
   }
 
-  async loadArena(kind: MediaArenaKind): Promise<{ entries: ArenaResult["entries"]; rateLimit: RateLimit | null; fromCache: boolean }> {
+  async loadArena(
+    kind: MediaArenaKind,
+    options: { force?: boolean } = {},
+  ): Promise<{ entries: ArenaResult["entries"]; rateLimit: RateLimit | null; fromCache: boolean }> {
+    const force = options.force ?? false;
     const path = mediaArenaPaths[kind];
     const cached = await this.cache.get<ArenaResult>(path);
-    if (cached !== null && cached.fresh) {
+    if (!force && cached !== null && cached.fresh) {
       return { entries: cached.data.entries, rateLimit: cached.rateLimit, fromCache: true };
     }
     if (this.offline) {
@@ -66,9 +70,10 @@ export class DataService {
     }
   }
 
-  async loadModels(): Promise<ModelsSnapshot> {
+  async loadModels(options: { force?: boolean } = {}): Promise<ModelsSnapshot> {
+    const force = options.force ?? false;
     const cached = await this.cache.get<FreeModelsResult>(FREE_MODELS_PATH);
-    if (cached !== null && cached.fresh) {
+    if (!force && cached !== null && cached.fresh) {
       return snapshotFrom(cached.data, cached.storedAt, true, false);
     }
     if (this.offline) {

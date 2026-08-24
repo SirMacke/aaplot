@@ -131,9 +131,10 @@ export default function App(props: AppProps) {
   }, [props.serviceFactory, props.offline]);
 
   const load = React.useCallback(
-    async (apiKey: string) => {
+    async (apiKey: string, force = false) => {
       try {
-        const snapshot = await makeService(apiKey).loadModels();
+        const snapshot = await makeService(apiKey).loadModels(force ? { force: true } : {});
+        const current = getState();
         setState({
           screen: "main",
           error: null,
@@ -144,7 +145,7 @@ export default function App(props: AppProps) {
             storedAt: snapshot.storedAt,
             fromCache: snapshot.fromCache,
             stale: snapshot.stale,
-            arenas: snapshot.arenas,
+            arenas: { ...current.data.arenas, ...snapshot.arenas },
           },
         });
       } catch (error) {
@@ -263,7 +264,7 @@ export default function App(props: AppProps) {
         const apiKey = state.apiKey;
         if (apiKey === null) return;
         setState({ screen: "loading" });
-        void load(apiKey);
+        void load(apiKey, true);
         return;
       }
     }
@@ -311,6 +312,9 @@ export default function App(props: AppProps) {
         )}
       </Box>
       {state.helpOpen ? <Help tab={state.tab} /> : null}
+      {state.screen === "main" && state.error !== null ? (
+        <Text color="red">{state.error}</Text>
+      ) : null}
       {state.screen === "main" ? (
         <Footer
           rateLimit={state.data.rateLimit}

@@ -55,9 +55,9 @@ export class PlotPinStore {
       if (!Array.isArray(raw.slugs)) return null;
       return {
         slugs: normalizePlotPins(raw.slugs.filter((slug) => typeof slug === "string")),
-        yField: raw.yField,
-        xField: raw.xField,
         savedAt: typeof raw.savedAt === "string" ? raw.savedAt : new Date().toISOString(),
+        ...(raw.yField !== undefined ? { yField: raw.yField } : {}),
+        ...(raw.xField !== undefined ? { xField: raw.xField } : {}),
       };
     } catch {
       return null;
@@ -68,9 +68,9 @@ export class PlotPinStore {
     await mkdir(this.configDir, { recursive: true });
     const payload: PlotPinsData = {
       slugs: normalizePlotPins(data.slugs),
-      yField: data.yField,
-      xField: data.xField,
       savedAt: data.savedAt,
+      ...(data.yField !== undefined ? { yField: data.yField } : {}),
+      ...(data.xField !== undefined ? { xField: data.xField } : {}),
     };
     await writeFile(this.pinsPath(), `${JSON.stringify(payload, null, 2)}\n`);
     if (process.platform !== "win32") {
@@ -87,8 +87,8 @@ export class PlotPinStore {
         if (!Array.isArray(preset?.slugs)) continue;
         presets[name] = {
           slugs: normalizePlotPins(preset.slugs.filter((slug) => typeof slug === "string")),
-          y: preset.y,
-          x: preset.x,
+          ...(preset.y !== undefined ? { y: preset.y } : {}),
+          ...(preset.x !== undefined ? { x: preset.x } : {}),
         };
       }
       return presets;

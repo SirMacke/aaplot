@@ -860,10 +860,10 @@ export function renderModelsQuadrant(
     colorize: options.colorize ?? false,
     cornerLabels: info.cornerLabels,
     outstanding: info.outstanding,
-    legendOffset: options.legendOffset,
-    legendSort: options.legendSort,
-    legendSortAsc: options.legendSortAsc,
     xFormat: (value) => formatPlotX(value, xField),
+    ...(options.legendOffset !== undefined ? { legendOffset: options.legendOffset } : {}),
+    ...(options.legendSort !== undefined ? { legendSort: options.legendSort } : {}),
+    ...(options.legendSortAsc !== undefined ? { legendSortAsc: options.legendSortAsc } : {}),
   });
   return { text: result.text, legend: result.legend };
 }

@@ -190,4 +190,20 @@ describe("DataService.loadModels", () => {
     expect(snapshot.stale).toBe(true);
     expect(fetchFn).not.toHaveBeenCalled();
   });
+
+  it("refetches a fresh cache when force is set", async () => {
+    const cache = new FileCache(dir);
+    await cache.set(FREE_MODELS_PATH, SNAPSHOT, SNAPSHOT.rateLimit);
+    const fetchFn = makeFetchMock(apiResponse());
+    const service = new DataService({
+      apiKey: "test-key",
+      cache,
+      client: new ApiClient({ apiKey: "test-key", fetchFn, sleepFn: async () => {} }),
+    });
+
+    const snapshot = await service.loadModels({ force: true });
+
+    expect(snapshot.fromCache).toBe(false);
+    expect(fetchFn).toHaveBeenCalled();
+  });
 });

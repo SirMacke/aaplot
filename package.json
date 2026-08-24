@@ -9,6 +9,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SirMacke/aaplot.git"
+  },
+  "homepage": "https://github.com/SirMacke/aaplot#readme",
+  "bugs": {
+    "url": "https://github.com/SirMacke/aaplot/issues"
+  },
   "engines": {
     "node": ">=20"
   },

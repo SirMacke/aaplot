@@ -58,13 +58,13 @@ function AxisPicker(props: {
       {props.options.map((option, index) => (
         <React.Fragment key={option.field}>
           {index > 0 ? <Text dimColor> · </Text> : null}
-          <Text
-            color={option.field === props.active ? "cyan" : undefined}
-            bold={option.field === props.active}
-            underline={option.field === props.active}
-          >
-            {option.label}
-          </Text>
+          {option.field === props.active ? (
+            <Text color="cyan" bold underline>
+              {option.label}
+            </Text>
+          ) : (
+            <Text>{option.label}</Text>
+          )}
           <Text dimColor>({option.key})</Text>
         </React.Fragment>
       ))}
@@ -109,11 +109,11 @@ export function PlotTab(props: PlotTabProps) {
     y: props.yField,
     x: props.xField,
     colorize: !props.ascii,
-    pinSlugs: usingPins ? plotPins : undefined,
     pinFill: plotPinFill,
     legendOffset: plotLegendOffset,
     legendSort: plotLegendSort,
     legendSortAsc: plotLegendSortAsc,
+    ...(usingPins ? { pinSlugs: plotPins } : {}),
   });
 
   const legendEnd = legendPageEnd(legend.offset, legend.pageSize, legend.total);
@@ -151,6 +151,7 @@ export function PlotTab(props: PlotTabProps) {
         const name = names[index - 1];
         if (name !== undefined) {
           const preset = presets[name];
+          if (preset === undefined) return;
           setState({
             plotPins: preset.slugs,
             ...(preset.y !== undefined ? { plotY: preset.y } : {}),

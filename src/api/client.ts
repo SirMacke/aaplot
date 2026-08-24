@@ -206,13 +206,8 @@ export class ApiClient {
         }
         throw new ApiError(`network error: ${errorMessage(error)}`, "network");
       }
-      if ((response.status === 429 || response.status >= 500) && attempt < this.maxRetries) {
-        const retryAfter = parseRetryAfterSeconds(response.headers);
-        const delay =
-          response.status === 429 && retryAfter !== null
-            ? retryAfter * 1000
-            : this.backoffMs(attempt);
-        await this.sleepFn(delay);
+      if (response.status >= 500 && attempt < this.maxRetries) {
+        await this.sleepFn(this.backoffMs(attempt));
         continue;
       }
       const text = await response.text();

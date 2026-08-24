@@ -37,7 +37,10 @@ export function keyToAction(
     presetListOpen?: boolean;
   } = {},
 ): InputAction | null {
-  if (screen === "onboarding") return null;
+  if (screen === "onboarding") {
+    if (input === "q") return { type: "quit" };
+    return null;
+  }
   if (context.presetInputOpen || context.presetListOpen) {
     if (helpOpen) {
       if (key.escape || input === "?") return { type: "close-overlay" };
@@ -130,7 +133,7 @@ export function listViewport(
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 403) {
-      return "your key's tier cannot access this data — the free tier covers Models, Plot, and Media";
+      return "your key's tier cannot access this data — the free tier covers Models, Plot, Compare, and Media";
     }
     if (error.status === 429) {
       const seconds = error.retryAfterSeconds ?? 0;

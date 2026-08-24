@@ -13,8 +13,8 @@ import {
 } from "../../src/ui/logic.js";
 
 describe("keyToAction", () => {
-  it("ignores all keys on the onboarding screen", () => {
-    expect(keyToAction("q", {}, "onboarding", false)).toBeNull();
+  it("quits from onboarding with q and ignores other keys", () => {
+    expect(keyToAction("q", {}, "onboarding", false)).toEqual({ type: "quit" });
     expect(keyToAction("?", {}, "onboarding", false)).toBeNull();
   });
 
@@ -115,7 +115,7 @@ describe("isNarrow", () => {
 
 describe("errorMessage", () => {
   it("explains tier and quota errors", () => {
-    expect(errorMessage(new ApiError("nope", "http", 403))).toContain("tier");
+    expect(errorMessage(new ApiError("nope", "http", 403))).toContain("Compare");
     expect(errorMessage(new ApiError("nope", "http", 429, null, 3600))).toContain("resets in 1h");
     expect(errorMessage(new ApiError("nope", "network"))).toContain("offline");
   });

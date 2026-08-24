@@ -128,20 +128,21 @@ describe("ApiClient retries", () => {
     expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([500, 1000]);
   });
 
-  it("respects Retry-After on 429 before retrying", async () => {
+  it("does not retry 429 and exposes Retry-After immediately", async () => {
     const fetchMock = vi.fn(
       mockFetch([
-        jsonResponse('{"error":"quota exhausted"}', 429, { ...RATE_LIMIT_HEADERS, "Retry-After": "2" }),
+        jsonResponse('{"error":"quota exhausted"}', 429, { ...RATE_LIMIT_HEADERS, "Retry-After": "3600" }),
         jsonResponse(ttsArena),
       ]),
     );
     const sleep = makeSleep();
     const client = makeClient(fetchMock as unknown as typeof fetch, sleep);
 
-    const result = await client.getArena("tts");
+    const error = await client.getArena("tts").catch((caught: unknown) => caught);
 
-    expect(result.entries).toHaveLength(3);
-    expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([2000]);
+    expect(error).toMatchObject({ kind: "http", status: 429, retryAfterSeconds: 3600 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
   });
 
   it("retries transient network errors", async () => {
@@ -181,14 +182,9 @@ describe("ApiClient errors", () => {
     expect(sleep).not.toHaveBeenCalled();
   });
 
-  it("exposes Retry-After when a 429 is not retried", async () => {
+  it("exposes Retry-After on 429 without sleeping", async () => {
     const fetchMock = vi.fn(
-      mockFetch([
-        jsonResponse('{"error":"quota exhausted"}', 429, { "Retry-After": "3600" }),
-        jsonResponse('{"error":"quota exhausted"}', 429, { "Retry-After": "3600" }),
-        jsonResponse('{"error":"quota exhausted"}', 429, { "Retry-After": "3600" }),
-        jsonResponse('{"error":"quota exhausted"}', 429, { "Retry-After": "3600" }),
-      ]),
+      mockFetch([jsonResponse('{"error":"quota exhausted"}', 429, { "Retry-After": "3600" })]),
     );
     const sleep = makeSleep();
     const client = makeClient(fetchMock as unknown as typeof fetch, sleep);
@@ -196,6 +192,8 @@ describe("ApiClient errors", () => {
     const error = await client.getArena("tts").catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "http", status: 429, retryAfterSeconds: 3600 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
   });
 
   it("throws a schema error when the response shape does not match", async () => {

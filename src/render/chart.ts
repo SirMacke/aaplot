@@ -12,6 +12,7 @@ export function horizontalBar(
   const clamped = Math.max(0, Math.min(max, value));
   const filled = Math.round((clamped / max) * width);
   const bar = `${"█".repeat(filled)}${"░".repeat(Math.max(0, width - filled))}`;
-  const text = value >= 100 ? value.toFixed(0) : value.toFixed(options.digits ?? 1);
+  const raw = value >= 100 ? value.toFixed(0) : value.toFixed(options.digits ?? 1);
+  const text = raw.includes(".") ? raw.replace(/0+$/, "").replace(/\.$/, "") : raw;
   return `${label.padEnd(labelWidth)} ${bar} ${text}`;
 }

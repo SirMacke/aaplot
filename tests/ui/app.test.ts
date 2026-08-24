@@ -4,11 +4,12 @@ import path from "node:path";
 import { render } from "ink-testing-library";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { demoModels } from "../../src/api/demo.js";
+import { ApiError } from "../../src/api/client.js";
+import { demoArenas, demoModels } from "../../src/api/demo.js";
 import { KeyStore } from "../../src/core/config.js";
 import { DataService } from "../../src/core/data.js";
 import App from "../../src/ui/app.js";
-import { resetState, setState } from "../../src/ui/store.js";
+import { getState, resetState, setState } from "../../src/ui/store.js";
 
 const mounts: Array<() => void> = [];
 
@@ -82,6 +83,7 @@ describe("App shell", () => {
       await waitForFrame(stdout, "Paste your key");
       const frame = lastFrame(stdout);
       expect(frame).toContain("artificialanalysis.ai/data-api");
+      expect(frame).toContain("q or ctrl+c quit");
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -113,7 +115,7 @@ describe("App shell", () => {
       await waitForFrame(stdout, "34/34");
 
       expect(await keyStore.read()).toBe("test-key-1234567890");
-      expect(fakeService.loadModels).toHaveBeenCalledWith();
+      expect(fakeService.loadModels).toHaveBeenCalled();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -178,5 +180,75 @@ describe("App shell", () => {
     expect(frame).toContain("Intel");
     expect(frame).toContain("★");
     expect(frame).toContain("2 pinned");
+  });
+
+  it("keeps loaded arenas when models refresh", async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), "aaplot-refresh-"));
+    try {
+      const keyStore = new KeyStore(dir, {});
+      await keyStore.write("stored-key");
+      const fakeService = {
+        loadModels: vi.fn(async () => ({
+          models: demoModels(),
+          rateLimit: { limit: 100, remaining: 95, reset: Math.floor(Date.now() / 1000) + 86_400 },
+          indexVersion: 4.1,
+          storedAt: Date.now(),
+          fromCache: false,
+          stale: false,
+          arenas: {},
+        })),
+        loadArena: vi.fn(async () => ({ entries: [], rateLimit: null, fromCache: true })),
+      };
+      const { stdout, stdin } = mountApp({
+        keyStore,
+        widthOverride: 140,
+        serviceFactory: () => fakeService as unknown as DataService,
+      });
+
+      await waitForFrame(stdout, "34/34");
+      const tts = demoArenas().tts;
+      setState({ data: { ...getState().data, arenas: { tts } } });
+      stdin.write("r");
+
+      await vi.waitFor(() => {
+        expect(fakeService.loadModels.mock.calls.length).toBeGreaterThanOrEqual(2);
+        expect(getState().data.arenas.tts).toEqual(tts);
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("shows arena fetch errors on the main screen", async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), "aaplot-arena-err-"));
+    try {
+      const keyStore = new KeyStore(dir, {});
+      await keyStore.write("stored-key");
+      const fakeService = {
+        loadModels: vi.fn(async () => ({
+          models: demoModels(),
+          rateLimit: { limit: 100, remaining: 95, reset: Math.floor(Date.now() / 1000) + 86_400 },
+          indexVersion: 4.1,
+          storedAt: Date.now(),
+          fromCache: false,
+          stale: false,
+          arenas: {},
+        })),
+        loadArena: vi.fn(async () => {
+          throw new ApiError("quota exhausted", "http", 429, null, 3600);
+        }),
+      };
+      const { stdout } = mountApp({
+        keyStore,
+        widthOverride: 140,
+        serviceFactory: () => fakeService as unknown as DataService,
+      });
+
+      await waitForFrame(stdout, "34/34");
+      setState({ tab: "media" });
+      await waitForFrame(stdout, "resets in 1h");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

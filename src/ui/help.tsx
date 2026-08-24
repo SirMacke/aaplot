@@ -19,7 +19,7 @@ const GLOBAL_SECTIONS: readonly HelpSection[] = [
   {
     title: "App",
     bindings: [
-      ["r", "refresh data"],
+      ["r", "refresh (bypass cache)"],
       ["?", "toggle this help"],
       ["esc", "close overlays"],
       ["q", "quit"],
