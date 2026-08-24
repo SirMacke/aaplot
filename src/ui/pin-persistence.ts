@@ -12,11 +12,8 @@ export function getPlotPinStore(): PlotPinStore {
 export async function loadSavedPlotPins(): Promise<void> {
   const saved = await getPlotPinStore().readPins();
   if (saved === null) return;
-  setState({
-    plotPins: saved.slugs,
-    ...(saved.yField !== undefined ? { plotY: saved.yField } : {}),
-    ...(saved.xField !== undefined ? { plotX: saved.xField } : {}),
-  });
+  // Axes stay at intel vs index-run on launch; presets still restore their own.
+  setState({ plotPins: saved.slugs });
 }
 
 export async function persistPlotPins(): Promise<void> {

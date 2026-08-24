@@ -35,4 +35,9 @@ describe("store", () => {
     });
     expect(getState().data.models).toEqual([]);
   });
+
+  it("defaults the plot to intel vs index-run cost", () => {
+    expect(getState().plotY).toBe("intelligence");
+    expect(getState().plotX).toBe("index_run_cost");
+  });
 });
