@@ -1,5 +1,11 @@
 # aaplot
 
+## 0.0.3
+
+### Patch Changes
+
+- d04338c: Open Plot on intel vs index-run cost instead of restoring last session's axes.
+
 ## 0.0.2
 
 ### Patch Changes
