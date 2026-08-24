@@ -4,7 +4,7 @@
   "description": "Terminal dashboard for Artificial Analysis model data — charts, rankings, comparisons. Unofficial.",
   "type": "module",
   "bin": {
-    "aaplot": "./dist/bin/aaplot.js"
+    "aaplot": "dist/bin/aaplot.js"
   },
   "files": [
     "dist"
@@ -48,8 +48,7 @@
     "vitest": "^4.1.11"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "license": "MIT",
   "keywords": [
