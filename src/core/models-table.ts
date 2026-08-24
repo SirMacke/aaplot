@@ -220,7 +220,8 @@ export function formatRelease(value: string | null): string {
 }
 
 function trimZeros(text: string): string {
-  return text.replace(/\.?0+$/, "").replace(/^-0$/, "0");
+  if (!text.includes(".")) return text;
+  return text.replace(/0+$/, "").replace(/\.$/, "");
 }
 
 export interface ModelTableLayout {

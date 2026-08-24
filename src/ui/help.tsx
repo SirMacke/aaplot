@@ -42,7 +42,7 @@ const TAB_SECTIONS: Record<TabId, readonly HelpSection[]> = {
       bindings: [["i c v $ s d", "intel / code / value / idx$ / speed / date"]],
     },
     {
-      title: "Plot pins",
+      title: "Pins (Plot + Compare)",
       bindings: [
         ["p / space", "toggle pin on selected model"],
         ["P", "pin all visible rows"],
@@ -77,7 +77,19 @@ const TAB_SECTIONS: Record<TabId, readonly HelpSection[]> = {
       ],
     },
   ],
-  compare: [],
+  compare: [
+    {
+      title: "Selection",
+      bindings: [
+        ["p / space", "pin models on the Models tab"],
+        ["C", "clear all pins"],
+      ],
+    },
+    {
+      title: "Columns",
+      bindings: [["[  ]  ,  .", "shift columns when they don't all fit"]],
+    },
+  ],
   media: [
     {
       title: "Arena",

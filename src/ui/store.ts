@@ -52,6 +52,7 @@ export interface AppState {
   presetListOpen: boolean;
   mediaArena: MediaArenaKind;
   mediaSelectedIndex: number;
+  compareOffset: number;
 }
 
 export const initialModelsData: ModelsData = {
@@ -100,6 +101,7 @@ const initialState: AppState = {
   presetListOpen: false,
   mediaArena: "tts",
   mediaSelectedIndex: 0,
+  compareOffset: 0,
 };
 
 let state: AppState = initialState;
@@ -151,6 +153,7 @@ export function resetState(): void {
     presetListOpen: false,
     mediaArena: "tts",
     mediaSelectedIndex: 0,
+    compareOffset: 0,
   };
 }
 

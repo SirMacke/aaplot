@@ -7,13 +7,13 @@ import { KeyStore, getConfigPaths } from "../core/config.js";
 import { DataService } from "../core/data.js";
 import { Footer } from "./footer.js";
 import { Help } from "./help.js";
-import { cycleTab, errorMessage, isNarrow, keyToAction } from "./logic.js";
+import { cycleTab, errorMessage, keyToAction } from "./logic.js";
 import { loadSavedPlotPins } from "./pin-persistence.js";
 import { anchorTerminalTop } from "./terminal-anchor.js";
 import { Onboarding } from "./onboarding.js";
-import { Placeholder } from "./placeholder.js";
 import { setState, useAppState, getState, type ModelsData } from "./store.js";
 import { TabBar } from "./tabbar.js";
+import { CompareTab } from "./tabs/compare.js";
 import { MediaTab } from "./tabs/media.js";
 import { ModelsTab } from "./tabs/models.js";
 import { PlotTab } from "./tabs/plot.js";
@@ -46,7 +46,6 @@ function seedDemo() {
 }
 
 function TabContent(props: {
-  narrow: boolean;
   width: number;
   ascii: boolean;
   demo: boolean;
@@ -78,13 +77,7 @@ function TabContent(props: {
         />
       );
     case "compare":
-      return (
-        <Placeholder
-          title="Compare"
-          note={props.narrow ? "side-by-side rows — later" : "side-by-side rows for chosen slugs — later"}
-          modelCount={0}
-        />
-      );
+      return <CompareTab models={state.data.models} width={props.width} />;
     case "media":
       return (
         <MediaTab
@@ -308,7 +301,6 @@ export default function App(props: AppProps) {
           <Text>loading models…</Text>
         ) : (
           <TabContent
-            narrow={isNarrow(width)}
             width={width}
             ascii={state.ascii}
             demo={state.demo}

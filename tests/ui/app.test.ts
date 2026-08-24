@@ -8,7 +8,7 @@ import { demoModels } from "../../src/api/demo.js";
 import { KeyStore } from "../../src/core/config.js";
 import { DataService } from "../../src/core/data.js";
 import App from "../../src/ui/app.js";
-import { resetState } from "../../src/ui/store.js";
+import { resetState, setState } from "../../src/ui/store.js";
 
 const mounts: Array<() => void> = [];
 
@@ -153,5 +153,30 @@ describe("App shell", () => {
     await waitForFrame(stdout, "Models");
     const frame = lastFrame(stdout);
     expect(frame).not.toContain("1 Models");
+  });
+
+  it("shows an empty Compare hint until models are pinned", async () => {
+    const { stdout } = mountApp({ demo: true, widthOverride: 140 });
+
+    await waitForFrame(stdout, "Models");
+    await vi.waitFor(() => {
+      setState({ plotPins: [], tab: "compare" });
+      expect(lastFrame(stdout)).toContain("pin models on the Models tab");
+    });
+  });
+
+  it("compares pinned models side by side with metric winners", async () => {
+    const { stdout } = mountApp({ demo: true, widthOverride: 140 });
+
+    await waitForFrame(stdout, "Models");
+    await vi.waitFor(() => {
+      setState({ plotPins: ["kestrel-1", "lumen-forge-x2"], tab: "compare" });
+      expect(lastFrame(stdout)).toContain("kestrel-1");
+    });
+    const frame = lastFrame(stdout);
+    expect(frame).toContain("lumen-forge-x2");
+    expect(frame).toContain("Intel");
+    expect(frame).toContain("★");
+    expect(frame).toContain("2 pinned");
   });
 });

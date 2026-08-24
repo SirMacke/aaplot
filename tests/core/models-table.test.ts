@@ -4,6 +4,8 @@ import {
   activeFilterLabels,
   filterModels,
   formatColumnHeader,
+  formatCurrency,
+  formatNumber,
   formatSortStatus,
   modelTableLayout,
   prepareModelTable,
@@ -92,6 +94,22 @@ describe("formatColumnHeader", () => {
 describe("formatSortStatus", () => {
   it("describes the active sort direction in plain language", () => {
     expect(formatSortStatus("release", false)).toBe("release ↓ (newest)");
+  });
+});
+
+describe("formatNumber", () => {
+  it("keeps integer trailing zeros and trims decimal padding", () => {
+    expect(formatNumber(240, 0)).toBe("240");
+    expect(formatNumber(61.2)).toBe("61.2");
+    expect(formatNumber(70)).toBe("70");
+  });
+});
+
+describe("formatCurrency", () => {
+  it("keeps whole-dollar trailing zeros", () => {
+    expect(formatCurrency(260)).toBe("$260");
+    expect(formatCurrency(3.1)).toBe("$3.1");
+    expect(formatCurrency(0.6)).toBe("$0.6");
   });
 });
 
