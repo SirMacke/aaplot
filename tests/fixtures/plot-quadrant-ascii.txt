@@ -1,6 +1,6 @@
 Intelligence Index vs index run cost (USD) (log)
 
-      ┌────────────────────────────────────────────────────────────┐    # model                x     y↓
+      ┌────────────────────────────────────────────────────────────┐    # model                x [1m    y↓[22m
         cheap + smart                    |        pricey + smart      ★[1;4mA[0m lumen-forge-x2    $260   77.9
                                          |                     [1;4mA[0m      ★[1;4mB[0m quarry-frontier   $210   76.5
                                          |                   [1;4mB[0m        ★[1;4mC[0m nimbus-omni       $130   74.2
@@ -23,8 +23,8 @@ Intelligence Index vs index run cost (USD) (log)
                         W                |                             T quarry-pulse        $9   59.8
    55                                    |                  X          U halcyon-max       $165   58.6
                                          |                            ★[1;4mV[0m quarry-8b         $2.2   57.4
-        [1;4mY[0m                                |                             W halcyon-drift     $5.2   56.3
-        cheap + weaker                   |       pricey + weaker      … +2 more (by Intelligence Index ↓)
+        [1;4mY[0m                                |                            … ↓3 more
+        cheap + weaker                   |       pricey + weaker
       └┴──────┴────────┴──────┴──────┴────────┴──────┴──────┴────┘
       $1     $2       $5     $10    $20      $50   $100   $200
 n=25/25  median index run cost (USD): $30  median Intelligence Index: 64.7  ★ 15 outstanding

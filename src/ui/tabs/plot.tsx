@@ -1,8 +1,19 @@
 import { Box, Text, useInput } from "ink";
 import React from "react";
 import type { FreeModel } from "../../api/schemas.js";
-import { renderModelsQuadrant, type XField, type YField } from "../../render/plot.js";
+import {
+  legendPageEnd,
+  renderModelsQuadrant,
+  type LegendSortField,
+  type XField,
+  type YField,
+} from "../../render/plot.js";
 import { isNarrow } from "../logic.js";
+import {
+  clampLegendOffset,
+  formatLegendSortStatus,
+  toggleLegendSort,
+} from "../plot-legend.js";
 import {
   loadPlotPresets,
   persistPlotPins,
@@ -30,6 +41,12 @@ const X_OPTIONS: readonly { key: string; field: XField; label: string }[] = [
   { key: "o", field: "output_price", label: "output $" },
 ];
 
+const LEGEND_SORT_KEYS: Record<string, LegendSortField> = {
+  y: "y",
+  x: "x",
+  m: "model",
+};
+
 function AxisPicker(props: {
   label: string;
   options: readonly { key: string; field: string; label: string }[];
@@ -56,7 +73,16 @@ function AxisPicker(props: {
 }
 
 export function PlotTab(props: PlotTabProps) {
-  const { plotPins, plotPinFill, presetInputOpen, presetInput, presetListOpen } = useAppState();
+  const {
+    plotPins,
+    plotPinFill,
+    plotLegendOffset,
+    plotLegendSort,
+    plotLegendSortAsc,
+    presetInputOpen,
+    presetInput,
+    presetListOpen,
+  } = useAppState();
   const [presets, setPresets] = React.useState<
     Record<string, { slugs: string[]; y?: YField; x?: XField }>
   >({});
@@ -72,6 +98,26 @@ export function PlotTab(props: PlotTabProps) {
     if (!presetListOpen) return;
     void loadPlotPresets().then(setPresets);
   }, [presetListOpen]);
+
+  const usingPins = plotPins.length > 0;
+  const { text: plot, legend } = renderModelsQuadrant(props.models, {
+    ascii: props.ascii,
+    width: plotWidth,
+    height: plotHeight,
+    top: 25,
+    sortBy: "intelligence",
+    y: props.yField,
+    x: props.xField,
+    colorize: !props.ascii,
+    pinSlugs: usingPins ? plotPins : undefined,
+    pinFill: plotPinFill,
+    legendOffset: plotLegendOffset,
+    legendSort: plotLegendSort,
+    legendSortAsc: plotLegendSortAsc,
+  });
+
+  const legendEnd = legendPageEnd(legend.offset, legend.pageSize, legend.total);
+  const canScrollLegend = legend.total > legend.pageSize;
 
   useInput((input, key) => {
     if (presetInputOpen) {
@@ -110,14 +156,45 @@ export function PlotTab(props: PlotTabProps) {
             ...(preset.y !== undefined ? { plotY: preset.y } : {}),
             ...(preset.x !== undefined ? { plotX: preset.x } : {}),
             presetListOpen: false,
+            plotLegendOffset: 0,
           });
           void persistPlotPins();
         }
       }
       return;
     }
+    if (key.upArrow && canScrollLegend) {
+      setState({
+        plotLegendOffset: clampLegendOffset(
+          plotLegendOffset - 1,
+          legend.total,
+          legend.pageSize,
+        ),
+      });
+      return;
+    }
+    if (key.downArrow && canScrollLegend) {
+      setState({
+        plotLegendOffset: clampLegendOffset(
+          plotLegendOffset + 1,
+          legend.total,
+          legend.pageSize,
+        ),
+      });
+      return;
+    }
+    const nextLegendSort = LEGEND_SORT_KEYS[input];
+    if (nextLegendSort !== undefined) {
+      const next = toggleLegendSort(nextLegendSort, plotLegendSort, plotLegendSortAsc);
+      setState({
+        plotLegendSort: next.sort,
+        plotLegendSortAsc: next.asc,
+        plotLegendOffset: 0,
+      });
+      return;
+    }
     if (input === "f") {
-      setState({ plotPinFill: !plotPinFill });
+      setState({ plotPinFill: !plotPinFill, plotLegendOffset: 0 });
       return;
     }
     if (input === "s") {
@@ -129,12 +206,12 @@ export function PlotTab(props: PlotTabProps) {
       return;
     }
     if (input === "$") {
-      setState({ plotX: "index_run_cost" });
+      setState({ plotX: "index_run_cost", plotLegendOffset: 0 });
       void persistPlotPins();
       return;
     }
     if (input === "o") {
-      setState({ plotX: "output_price" });
+      setState({ plotX: "output_price", plotLegendOffset: 0 });
       void persistPlotPins();
       return;
     }
@@ -146,23 +223,9 @@ export function PlotTab(props: PlotTabProps) {
     };
     const field = nextY[input];
     if (field !== undefined) {
-      setState({ plotY: field });
+      setState({ plotY: field, plotLegendOffset: 0 });
       void persistPlotPins();
     }
-  });
-
-  const usingPins = plotPins.length > 0;
-  const plot = renderModelsQuadrant(props.models, {
-    ascii: props.ascii,
-    width: plotWidth,
-    height: plotHeight,
-    top: 25,
-    sortBy: "intelligence",
-    y: props.yField,
-    x: props.xField,
-    colorize: !props.ascii,
-    pinSlugs: usingPins ? plotPins : undefined,
-    pinFill: plotPinFill,
   });
 
   const presetNames = Object.keys(presets);
@@ -173,10 +236,13 @@ export function PlotTab(props: PlotTabProps) {
       <AxisPicker label="Y" options={Y_OPTIONS} active={props.yField} />
       <AxisPicker label="X" options={X_OPTIONS} active={props.xField} />
       <Text dimColor>
+        legend {legend.total === 0 ? "0" : `${legend.offset + 1}-${legendEnd}`} of {legend.total} · sort{" "}
+        {formatLegendSortStatus(plotLegendSort, plotLegendSortAsc)} · y x m toggle ·
+        {canScrollLegend ? " ↑↓ scroll ·" : " "}
         {usingPins
           ? `${plotPins.length} pinned${plotPinFill ? " + fill" : " only"} · f toggle fill`
-          : "legend sorted by Y ↓"}{" "}
-        · ★ band leaders · s save · l load · ? keys
+          : "★ band leaders"}{" "}
+        · s save · l load · ? keys
       </Text>
       {presetInputOpen ? (
         <Text>

@@ -9,6 +9,7 @@ import { Footer } from "./footer.js";
 import { Help } from "./help.js";
 import { cycleTab, errorMessage, isNarrow, keyToAction } from "./logic.js";
 import { loadSavedPlotPins } from "./pin-persistence.js";
+import { anchorTerminalTop } from "./terminal-anchor.js";
 import { Onboarding } from "./onboarding.js";
 import { Placeholder } from "./placeholder.js";
 import { setState, useAppState, getState, type ModelsData } from "./store.js";
@@ -103,6 +104,24 @@ export default function App(props: AppProps) {
   const { exit } = useApp();
   const { stdout } = useStdout();
   const width = props.widthOverride ?? stdout.columns ?? 120;
+  const [terminalRows, setTerminalRows] = React.useState(() => stdout.rows ?? 24);
+  const useFullHeight = Boolean(stdout.isTTY) && process.env.VITEST !== "true";
+
+  React.useEffect(() => {
+    if (!useFullHeight) return;
+    const onResize = () => {
+      setTerminalRows(stdout.rows ?? 24);
+    };
+    stdout.on("resize", onResize);
+    return () => {
+      stdout.off("resize", onResize);
+    };
+  }, [stdout, useFullHeight]);
+
+  React.useEffect(() => {
+    if (!useFullHeight) return;
+    anchorTerminalTop(stdout);
+  }, [stdout, useFullHeight, state.screen, state.tab, state.helpOpen, terminalRows]);
 
   const keyStore = React.useMemo(
     () => props.keyStore ?? new KeyStore(getConfigPaths().config),
@@ -259,50 +278,55 @@ export default function App(props: AppProps) {
 
   if (state.screen === "onboarding") {
     return (
-      <Onboarding
-        error={state.error}
-        onSubmit={(apiKey) => {
-          void (async () => {
-            await keyStore.write(apiKey);
-            setState({ apiKey, screen: "loading", error: null });
-            await load(apiKey);
-          })();
-        }}
-      />
+      <Box flexDirection="column" height={useFullHeight ? terminalRows : undefined}>
+        <Onboarding
+          error={state.error}
+          onSubmit={(apiKey) => {
+            void (async () => {
+              await keyStore.write(apiKey);
+              setState({ apiKey, screen: "loading", error: null });
+              await load(apiKey);
+            })();
+          }}
+        />
+      </Box>
     );
-  }
-  if (state.screen === "loading") {
-    return <Text>loading models…</Text>;
   }
   if (state.screen === "error") {
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" height={useFullHeight ? terminalRows : undefined}>
         <Text color="red">error: {state.error}</Text>
         <Text dimColor>press r to retry · q to quit</Text>
       </Box>
     );
   }
   return (
-    <Box flexDirection="column" flexGrow={1}>
+    <Box flexDirection="column" height={useFullHeight ? terminalRows : undefined}>
       <TabBar active={state.tab} width={width} />
-      <Box flexGrow={1}>
-        <TabContent
-          narrow={isNarrow(width)}
-          width={width}
-          ascii={state.ascii}
-          demo={state.demo}
-          onLoadArena={(kind) => {
-            void loadArena(kind);
-          }}
-        />
+      <Box flexGrow={1} flexDirection="column">
+        {state.screen === "loading" ? (
+          <Text>loading models…</Text>
+        ) : (
+          <TabContent
+            narrow={isNarrow(width)}
+            width={width}
+            ascii={state.ascii}
+            demo={state.demo}
+            onLoadArena={(kind) => {
+              void loadArena(kind);
+            }}
+          />
+        )}
       </Box>
       {state.helpOpen ? <Help tab={state.tab} /> : null}
-      <Footer
-        rateLimit={state.data.rateLimit}
-        storedAt={state.data.storedAt}
-        indexVersion={state.data.indexVersion}
-        stale={state.data.stale}
-      />
+      {state.screen === "main" ? (
+        <Footer
+          rateLimit={state.data.rateLimit}
+          storedAt={state.data.storedAt}
+          indexVersion={state.data.indexVersion}
+          stale={state.data.stale}
+        />
+      ) : null}
     </Box>
   );
 }

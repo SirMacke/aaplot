@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { ArenaEntry, FreeModel, RateLimit, MediaArenaKind } from "../api/schemas.js";
 import type { ModelSortField } from "../core/models-table.js";
-import type { YField, XField } from "../render/plot.js";
+import type { YField, XField, LegendSortField } from "../render/plot.js";
 
 export type TabId = "models" | "plot" | "compare" | "media";
 export type Screen = "loading" | "onboarding" | "main" | "error";
@@ -42,6 +42,9 @@ export interface AppState {
   searchOpen: boolean;
   plotY: YField;
   plotX: XField;
+  plotLegendOffset: number;
+  plotLegendSort: LegendSortField;
+  plotLegendSortAsc: boolean;
   plotPins: string[];
   plotPinFill: boolean;
   presetInputOpen: boolean;
@@ -87,6 +90,9 @@ const initialState: AppState = {
   searchOpen: false,
   plotY: "intelligence",
   plotX: "index_run_cost",
+  plotLegendOffset: 0,
+  plotLegendSort: "y",
+  plotLegendSortAsc: false,
   plotPins: [],
   plotPinFill: true,
   presetInputOpen: false,
@@ -135,6 +141,9 @@ export function resetState(): void {
     searchOpen: false,
     plotY: "intelligence",
     plotX: "index_run_cost",
+    plotLegendOffset: 0,
+    plotLegendSort: "y",
+    plotLegendSortAsc: false,
     plotPins: [],
     plotPinFill: true,
     presetInputOpen: false,

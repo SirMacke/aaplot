@@ -52,6 +52,13 @@ const TAB_SECTIONS: Record<TabId, readonly HelpSection[]> = {
   ],
   plot: [
     {
+      title: "Legend",
+      bindings: [
+        ["↑ / ↓", "scroll model list"],
+        ["y x m", "sort by Y / X / model (press again to flip ↑↓)"],
+      ],
+    },
+    {
       title: "Axes",
       bindings: [
         ["i c a t", "Y: intel / coding / agentic / speed"],
@@ -75,8 +82,7 @@ const TAB_SECTIONS: Record<TabId, readonly HelpSection[]> = {
     {
       title: "Arena",
       bindings: [
-        ["[  ]", "previous / next arena type"],
-        [",  .", "previous / next arena (alt)"],
+        ["[  ]  ,  .", "previous / next arena (see strip above table)"],
       ],
     },
     {

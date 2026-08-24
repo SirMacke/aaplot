@@ -37,7 +37,7 @@ function withoutIndexRunCost(model: FreeModel): FreeModel {
 
 describe("renderModelsQuadrant", () => {
   it("matches the golden braille output for the demo dataset", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       width: 60,
       height: 24,
       top: 25,
@@ -47,7 +47,7 @@ describe("renderModelsQuadrant", () => {
   });
 
   it("matches the golden ascii output for the demo dataset", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       width: 60,
       height: 24,
       top: 25,
@@ -58,18 +58,18 @@ describe("renderModelsQuadrant", () => {
   });
 
   it("uses only ascii characters in ascii mode", () => {
-    const text = renderModelsQuadrant(demoModels(), { ascii: true, top: 10, width: 40, height: 12 });
+    const { text } = renderModelsQuadrant(demoModels(), { ascii: true, top: 10, width: 40, height: 12 });
     expect(text).not.toMatch(/[\u2800-\u28ff]/);
     expect(text).toMatch(/[A-Z]/);
   });
 
   it("uses braille characters in braille mode", () => {
-    const text = renderModelsQuadrant(demoModels(), { top: 10, width: 40, height: 12 });
+    const { text } = renderModelsQuadrant(demoModels(), { top: 10, width: 40, height: 12 });
     expect(text).toMatch(/[\u2800-\u28ff]/);
   });
 
   it("renders corner labels and a stats line", () => {
-    const text = renderModelsQuadrant(demoModels(), { top: 10, width: 50, height: 14 });
+    const { text } = renderModelsQuadrant(demoModels(), { top: 10, width: 50, height: 14 });
     expect(text).toContain("cheap + smart");
     expect(text).toContain("pricey + smart");
     expect(text).toContain("cheap + weaker");
@@ -78,13 +78,13 @@ describe("renderModelsQuadrant", () => {
   });
 
   it("supports the speed y-axis", () => {
-    const text = renderModelsQuadrant(demoModels(), { y: "speed", top: 10, width: 40, height: 12 });
+    const { text } = renderModelsQuadrant(demoModels(), { y: "speed", top: 10, width: 40, height: 12 });
     expect(text).toContain("speed (tok/s)");
     expect(text).toContain("cheap + fast");
   });
 
   it("supports index-run cost on the X axis", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       x: "index_run_cost",
       top: 10,
       width: 40,
@@ -95,7 +95,7 @@ describe("renderModelsQuadrant", () => {
   });
 
   it("renders denser log-scale X tick labels", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       x: "index_run_cost",
       top: 25,
       width: 60,
@@ -105,8 +105,31 @@ describe("renderModelsQuadrant", () => {
     expect(dollarTicks.length).toBeGreaterThan(2);
   });
 
+  it("scrolls the legend with offset and changes sort order", () => {
+    const first = renderModelsQuadrant(demoModels(), {
+      top: 25,
+      width: 40,
+      height: 12,
+      legendOffset: 0,
+      legendSort: "y",
+    });
+    const scrolled = renderModelsQuadrant(demoModels(), {
+      top: 25,
+      width: 40,
+      height: 12,
+      legendOffset: 5,
+      legendSort: "model",
+      legendSortAsc: true,
+    });
+    expect(first.text).not.toBe(scrolled.text);
+    expect(scrolled.legend.offset).toBe(5);
+    expect(scrolled.legend.sort).toBe("model");
+    expect(scrolled.legend.sortAsc).toBe(true);
+    expect(scrolled.text).toContain("↑5 · ↓10 more");
+  });
+
   it("highlights outstanding models in the legend", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       top: 10,
       width: 40,
       height: 12,
@@ -117,7 +140,7 @@ describe("renderModelsQuadrant", () => {
   });
 
   it("colorizes markers by creator when enabled", () => {
-    const text = renderModelsQuadrant(demoModels(), {
+    const { text } = renderModelsQuadrant(demoModels(), {
       top: 5,
       width: 40,
       height: 12,

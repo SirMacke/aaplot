@@ -15,4 +15,8 @@ render(
     maxCost: args.maxCost,
     cheap: args.cheap,
   }),
+  {
+    alternateScreen: true,
+    exitOnCtrlC: false,
+  },
 );

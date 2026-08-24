@@ -19,6 +19,15 @@ export interface PlotPoint {
 export type YField = "intelligence" | "coding" | "agentic" | "speed";
 export type XField = "output_price" | "index_run_cost";
 export type SortField = "value" | YField;
+export type LegendSortField = "y" | "x" | "model";
+
+export interface LegendPageInfo {
+  total: number;
+  offset: number;
+  pageSize: number;
+  sort: LegendSortField;
+  sortAsc: boolean;
+}
 
 export interface QuadrantPlotOptions {
   width?: number;
@@ -34,6 +43,9 @@ export interface QuadrantPlotOptions {
   yFormat?: (value: number) => string;
   colorize?: boolean;
   outstanding?: ReadonlySet<string>;
+  legendOffset?: number;
+  legendSort?: LegendSortField;
+  legendSortAsc?: boolean;
 }
 
 interface ResolvedOptions {
@@ -50,6 +62,9 @@ interface ResolvedOptions {
   yFormat: (value: number) => string;
   colorize: boolean;
   outstanding: ReadonlySet<string>;
+  legendOffset: number;
+  legendSort: LegendSortField;
+  legendSortAsc: boolean;
 }
 
 const DEFAULT_CORNER_LABELS: readonly [string, string, string, string] = [
@@ -111,6 +126,7 @@ export interface QuadrantRenderResult {
   stats: QuadrantStats;
   placed: PlacedMarker[];
   plotted: number;
+  legend: LegendPageInfo;
 }
 
 function resolveOptions(options: QuadrantPlotOptions): ResolvedOptions {
@@ -128,6 +144,9 @@ function resolveOptions(options: QuadrantPlotOptions): ResolvedOptions {
     yFormat: options.yFormat ?? compactNumber,
     colorize: options.colorize ?? false,
     outstanding: options.outstanding ?? new Set(),
+    legendOffset: Math.max(0, options.legendOffset ?? 0),
+    legendSort: options.legendSort ?? "y",
+    legendSortAsc: options.legendSortAsc ?? false,
   };
 }
 
@@ -426,9 +445,36 @@ function truncate(text: string, width: number): string {
   return text.length > width ? text.slice(0, width) : text;
 }
 
+const LEGEND_HEADER_BOLD_ON = "\x1b[1m";
+const LEGEND_HEADER_BOLD_OFF = "\x1b[22m";
+
+function formatLegendHeaderCol(
+  label: string,
+  field: LegendSortField,
+  active: LegendSortField,
+  asc: boolean,
+  width: number,
+  alignStart: boolean,
+): string {
+  const isActive = field === active;
+  const text = isActive ? `${label}${asc ? "↑" : "↓"}` : label;
+  const padded = alignStart ? text.padEnd(width) : text.padStart(width);
+  return isActive ? `${LEGEND_HEADER_BOLD_ON}${padded}${LEGEND_HEADER_BOLD_OFF}` : padded;
+}
+
 function legendHeader(options: ResolvedOptions): string {
   const modelWidth = options.legendWidth - 2 - LEGEND_X_WIDTH - 1 - LEGEND_Y_WIDTH;
-  return `# ${"model".padEnd(modelWidth)}${"x".padStart(LEGEND_X_WIDTH)} ${"y↓".padStart(LEGEND_Y_WIDTH)}`;
+  const modelCol = formatLegendHeaderCol(
+    "model",
+    "model",
+    options.legendSort,
+    options.legendSortAsc,
+    modelWidth,
+    true,
+  );
+  const xCol = formatLegendHeaderCol("x", "x", options.legendSort, options.legendSortAsc, LEGEND_X_WIDTH, false);
+  const yCol = formatLegendHeaderCol("y", "y", options.legendSort, options.legendSortAsc, LEGEND_Y_WIDTH, false);
+  return `# ${modelCol}${xCol} ${yCol}`;
 }
 
 function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: number): string {
@@ -441,25 +487,59 @@ function legendLine(marker: PlacedMarker, options: ResolvedOptions, modelWidth: 
   return `${prefix}${markerText} ${label.padEnd(modelWidth)}${truncate(x, LEGEND_X_WIDTH).padStart(LEGEND_X_WIDTH)} ${truncate(y, LEGEND_Y_WIDTH).padStart(LEGEND_Y_WIDTH)}`;
 }
 
-function legendLinesFor(
+function sortLegendMarkers(
   placed: PlacedMarker[],
-  options: ResolvedOptions,
-  yLabel: string,
-): string[] {
+  sort: LegendSortField,
+  asc: boolean,
+): PlacedMarker[] {
+  const compareNum = (left: number, right: number): number => (asc ? left - right : right - left);
+  return [...placed].sort((left, right) => {
+    switch (sort) {
+      case "x":
+        return (
+          compareNum(left.point.x, right.point.x) ||
+          compareNum(left.point.y, right.point.y) ||
+          left.point.label.localeCompare(right.point.label)
+        );
+      case "model": {
+        const byName = left.point.label.localeCompare(right.point.label);
+        return asc ? byName : -byName;
+      }
+      case "y":
+      default:
+        return (
+          compareNum(left.point.y, right.point.y) ||
+          compareNum(left.point.x, right.point.x) ||
+          left.point.label.localeCompare(right.point.label)
+        );
+    }
+  });
+}
+
+function clampLegendOffset(offset: number, total: number, pageSize: number): number {
+  if (total <= pageSize) return 0;
+  return Math.max(0, Math.min(offset, total - pageSize));
+}
+
+function legendLinesFor(placed: PlacedMarker[], options: ResolvedOptions): string[] {
   const modelWidth = options.legendWidth - 2 - LEGEND_X_WIDTH - 1 - LEGEND_Y_WIDTH;
   const lines: string[] = [];
   const limit = options.height;
-  const sorted = [...placed].sort(
-    (left, right) =>
-      right.point.y - left.point.y ||
-      left.point.x - right.point.x ||
-      left.point.label.localeCompare(right.point.label),
-  );
-  sorted.slice(0, Math.max(0, limit - 1)).forEach((marker) => {
+  const pageSize = Math.max(1, limit - 2);
+  const sorted = sortLegendMarkers(placed, options.legendSort, options.legendSortAsc);
+  const offset = clampLegendOffset(options.legendOffset, sorted.length, pageSize);
+  const page = sorted.slice(offset, offset + pageSize);
+  page.forEach((marker) => {
     lines.push(legendLine(marker, options, modelWidth));
   });
-  const overflow = sorted.length - (limit - 1);
-  if (overflow > 0) lines.push(`… +${overflow} more (by ${yLabel} ↓)`);
+  const remainingBelow = sorted.length - offset - page.length;
+  const remainingAbove = offset;
+  if (remainingBelow > 0 || remainingAbove > 0) {
+    const parts: string[] = [];
+    if (remainingAbove > 0) parts.push(`↑${remainingAbove}`);
+    if (remainingBelow > 0) parts.push(`↓${remainingBelow}`);
+    lines.push(`… ${parts.join(" · ")} more`);
+  }
   while (lines.length < limit) lines.push("");
   return lines;
 }
@@ -535,6 +615,7 @@ export function renderQuadrantDetailed(
       stats: { medianX: null, medianY: null },
       placed: [],
       plotted: 0,
+      legend: { total: 0, offset: 0, pageSize: 0, sort: resolved.legendSort, sortAsc: resolved.legendSortAsc },
     };
   }
   const layout = buildLayout(valid, resolved);
@@ -554,7 +635,7 @@ export function renderQuadrantDetailed(
   const yTicks = computeYTickRows(valid, resolved, layout);
   const xTicks = computeXTickCols(valid, resolved, layout);
   const gutterWidth = gutterWidthFor(yTicks.map((tick) => tick.label));
-  const legendLines = legendLinesFor(placed, resolved, resolved.yLabel);
+  const legendLines = legendLinesFor(placed, resolved);
   const cornerRows = new Set([0, resolved.height - 1]);
   const canvasRows = layout.canvas.cells.map((row) =>
     row.map((cell) => renderCell(layout.canvas, cell, resolved)).join(""),
@@ -576,11 +657,31 @@ export function renderQuadrantDetailed(
   lines.push(xTickLabelLine(resolved, gutterWidth, xTicks).trimEnd());
   lines.push(statsLine(valid.length, points.length, stats, resolved));
 
-  return { text: lines.join("\n"), stats, placed, plotted: valid.length };
+  const legendPageSize = Math.max(1, resolved.height - 2);
+  const legendSorted = sortLegendMarkers(placed, resolved.legendSort, resolved.legendSortAsc);
+  const legendOffset = clampLegendOffset(resolved.legendOffset, legendSorted.length, legendPageSize);
+
+  return {
+    text: lines.join("\n"),
+    stats,
+    placed,
+    plotted: valid.length,
+    legend: {
+      total: legendSorted.length,
+      offset: legendOffset,
+      pageSize: legendPageSize,
+      sort: resolved.legendSort,
+      sortAsc: resolved.legendSortAsc,
+    },
+  };
 }
 
 export function renderQuadrant(points: PlotPoint[], options: QuadrantPlotOptions = {}): string {
   return renderQuadrantDetailed(points, options).text;
+}
+
+export function legendPageEnd(offset: number, pageSize: number, total: number): number {
+  return Math.min(total, offset + pageSize);
 }
 
 export interface ModelsPlotOptions {
@@ -596,6 +697,9 @@ export interface ModelsPlotOptions {
   title?: string;
   pinSlugs?: string[];
   pinFill?: boolean;
+  legendOffset?: number;
+  legendSort?: LegendSortField;
+  legendSortAsc?: boolean;
 }
 
 export interface ModelPointInfo {
@@ -739,10 +843,13 @@ function formatPlotX(value: number, xField: XField): string {
   return xField === "index_run_cost" ? `$${compactNumber(value)}` : `$${compactNumber(value)}`;
 }
 
-export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOptions = {}): string {
+export function renderModelsQuadrant(
+  models: FreeModel[],
+  options: ModelsPlotOptions = {},
+): { text: string; legend: LegendPageInfo } {
   const xField = options.x ?? "index_run_cost";
   const info = modelsToPoints(models, options);
-  return renderQuadrant(info.points, {
+  const result = renderQuadrantDetailed(info.points, {
     width: options.width ?? 60,
     height: options.height ?? 24,
     title: info.title,
@@ -753,6 +860,10 @@ export function renderModelsQuadrant(models: FreeModel[], options: ModelsPlotOpt
     colorize: options.colorize ?? false,
     cornerLabels: info.cornerLabels,
     outstanding: info.outstanding,
+    legendOffset: options.legendOffset,
+    legendSort: options.legendSort,
+    legendSortAsc: options.legendSortAsc,
     xFormat: (value) => formatPlotX(value, xField),
   });
+  return { text: result.text, legend: result.legend };
 }
