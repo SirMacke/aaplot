@@ -5,7 +5,7 @@ export default defineConfig({
     "bin/aaplot": "src/bin/aaplot.tsx",
   },
   format: ["esm"],
-  target: "node20",
+  target: "node22",
   platform: "node",
   sourcemap: true,
   clean: true,

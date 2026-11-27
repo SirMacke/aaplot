@@ -2,7 +2,7 @@
 
 Unofficial terminal dashboard for [Artificial Analysis](https://artificialanalysis.ai) model data — cost vs intelligence quadrant charts, rankings, side-by-side compares, and media arena ELOs. Not affiliated with Artificial Analysis.
 
-Requires **Node.js 20+**.
+Requires **Node.js 22+** (Node 20 reached end of life in April 2026).
 
 ## Install
 
