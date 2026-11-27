@@ -125,12 +125,18 @@ export function parseArgs(argv: string[]): CliArgs {
       }
     } else if (arg === "--min-quality" || arg === "--max-cost") {
       const value = argv[index + 1];
-      const parsed = value === undefined ? NaN : Number(value);
-      if (Number.isFinite(parsed)) {
-        if (arg === "--min-quality") args.minQuality = parsed;
-        else args.maxCost = parsed;
-        index++;
+      const given = value !== undefined && !value.startsWith("--") ? value : undefined;
+      const parsed = given === undefined || given.trim() === "" ? NaN : Number(given);
+      if (!Number.isFinite(parsed)) {
+        fail(
+          given === undefined ? `${arg} needs a number` : `${arg} needs a number, got "${given}"`,
+        );
+        if (given !== undefined) index++;
+        continue;
       }
+      if (arg === "--min-quality") args.minQuality = parsed;
+      else args.maxCost = parsed;
+      index++;
     } else if (arg === "--top" || arg === "--width" || arg === "--height") {
       const parsed = positiveInteger(argv[index + 1]);
       if (parsed === null) {

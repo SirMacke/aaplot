@@ -43,10 +43,19 @@ describe("parseArgs", () => {
     expect(args.maxCost).toBe(2.5);
   });
 
-  it("ignores malformed numeric values", () => {
-    const args = parseArgs(["--min-quality", "abc", "--max-cost"]);
-    expect(args.minQuality).toBeNull();
-    expect(args.maxCost).toBeNull();
+  it("rejects malformed numeric values with a usage error", () => {
+    const abc = parseArgs(["models", "--min-quality", "abc"]);
+    expect(abc.minQuality).toBeNull();
+    expect(abc.error).toBe(`--min-quality needs a number, got "abc"`);
+    expect(abc.command).toBe("models");
+
+    const missing = parseArgs(["--max-cost"]);
+    expect(missing.maxCost).toBeNull();
+    expect(missing.error).toBe("--max-cost needs a number");
+
+    expect(parseArgs(["--max-cost", "--demo"]).error).toBe("--max-cost needs a number");
+    expect(parseArgs(["--min-quality", ""]).error).toBe(`--min-quality needs a number, got ""`);
+    expect(parseArgs(["--max-cost", "-1"]).maxCost).toBe(-1);
   });
 });
 
