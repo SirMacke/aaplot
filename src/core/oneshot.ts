@@ -266,6 +266,13 @@ export function formatPlotText(
   return `${text}\n★ marks outstanding models (cost-band leaders and the Pareto frontier)\n${footer(meta)}\n`;
 }
 
+/**
+ * Stable quadrant key for scripts: x side of the median (cheap = at or below)
+ * then y side (high = at or above). `quadrant` is the display label, which
+ * changes with the Y axis ("cheap + smart", "cheap + fast", ...).
+ */
+export type QuadrantId = "cheap_high" | "pricey_high" | "cheap_low" | "pricey_low";
+
 export function formatPlotJson(
   models: FreeModel[],
   meta: DatasetMeta,
@@ -275,11 +282,14 @@ export function formatPlotJson(
   const stats = quadrantStats(info.points);
   const bySlug = new Map(filtered.map((model) => [model.slug, model]));
   const [cheapHigh, priceyHigh, cheapLow, priceyLow] = info.cornerLabels;
-  const quadrant = (x: number, y: number): string => {
+  const quadrantOf = (x: number, y: number): { id: QuadrantId; label: string } => {
     const cheap = stats.medianX === null || x <= stats.medianX;
     const high = stats.medianY === null || y >= stats.medianY;
-    if (high) return cheap ? cheapHigh : priceyHigh;
-    return cheap ? cheapLow : priceyLow;
+    if (high)
+      return cheap
+        ? { id: "cheap_high", label: cheapHigh }
+        : { id: "pricey_high", label: priceyHigh };
+    return cheap ? { id: "cheap_low", label: cheapLow } : { id: "pricey_low", label: priceyLow };
   };
   return toJson({
     ...metaJson(meta),
@@ -305,7 +315,8 @@ export function formatPlotJson(
         creator: point.creator ?? null,
         x: point.x,
         y: point.y,
-        quadrant: quadrant(point.x, point.y),
+        quadrant: quadrantOf(point.x, point.y).label,
+        quadrant_id: quadrantOf(point.x, point.y).id,
         outstanding: info.outstanding.has(point.label),
       };
     }),

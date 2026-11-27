@@ -120,12 +120,34 @@ describe("aaplot plot", () => {
         x: "output_price",
         top: 4,
       }),
-    ) as { plotted: number; y_label: string; x_label: string; points: Array<{ quadrant: string }> };
+    ) as {
+      plotted: number;
+      y_label: string;
+      x_label: string;
+      median_x: number;
+      median_y: number;
+      points: Array<{ x: number; y: number; quadrant: string; quadrant_id: string }>;
+    };
     expect(parsed.plotted).toBe(4);
     expect(parsed.y_label).toBe("speed (tok/s)");
     expect(parsed.x_label).toBe("$/1M output tokens");
     for (const point of parsed.points) {
       expect(point.quadrant).toMatch(/^(cheap|pricey) \+ (fast|slow)$/);
+      const side = `${point.x <= parsed.median_x ? "cheap" : "pricey"}_${point.y >= parsed.median_y ? "high" : "low"}`;
+      expect(point.quadrant_id).toBe(side);
+    }
+  });
+
+  it("keeps quadrant_id stable when the Y axis relabels quadrants", () => {
+    for (const y of Y_AXES) {
+      const parsed = JSON.parse(formatPlotJson(demoModels(), META, { ...PLOT_OPTIONS, y })) as {
+        points: Array<{ quadrant_id: string }>;
+      };
+      for (const point of parsed.points) {
+        expect(["cheap_high", "pricey_high", "cheap_low", "pricey_low"]).toContain(
+          point.quadrant_id,
+        );
+      }
     }
   });
 });

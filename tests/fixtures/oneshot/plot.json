@@ -31,6 +31,7 @@
       "x": 260,
       "y": 77.9,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -40,6 +41,7 @@
       "x": 210,
       "y": 76.5,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -49,6 +51,7 @@
       "x": 130,
       "y": 74.2,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -58,6 +61,7 @@
       "x": 95,
       "y": 71.8,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -67,6 +71,7 @@
       "x": 88,
       "y": 70.6,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -76,6 +81,7 @@
       "x": 58,
       "y": 70,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -85,6 +91,7 @@
       "x": 72,
       "y": 69.4,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": false
     },
     {
@@ -94,6 +101,7 @@
       "x": 42,
       "y": 68.1,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -103,6 +111,7 @@
       "x": 34,
       "y": 67.3,
       "quadrant": "pricey + smart",
+      "quadrant_id": "pricey_high",
       "outstanding": true
     },
     {
@@ -112,6 +121,7 @@
       "x": 30,
       "y": 66.8,
       "quadrant": "cheap + smart",
+      "quadrant_id": "cheap_high",
       "outstanding": true
     },
     {
@@ -121,6 +131,7 @@
       "x": 26,
       "y": 66,
       "quadrant": "cheap + smart",
+      "quadrant_id": "cheap_high",
       "outstanding": true
     },
     {
@@ -130,6 +141,7 @@
       "x": 6.9,
       "y": 65.1,
       "quadrant": "cheap + smart",
+      "quadrant_id": "cheap_high",
       "outstanding": true
     },
     {
@@ -139,6 +151,7 @@
       "x": 20,
       "y": 64.7,
       "quadrant": "cheap + smart",
+      "quadrant_id": "cheap_high",
       "outstanding": false
     },
     {
@@ -148,6 +161,7 @@
       "x": 4.6,
       "y": 63.8,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": true
     },
     {
@@ -157,6 +171,7 @@
       "x": 16,
       "y": 63.5,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": false
     },
     {
@@ -166,6 +181,7 @@
       "x": 14,
       "y": 62.9,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": false
     },
     {
@@ -175,6 +191,7 @@
       "x": 3.1,
       "y": 61.2,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": true
     },
     {
@@ -184,6 +201,7 @@
       "x": 230,
       "y": 60.4,
       "quadrant": "pricey + weaker",
+      "quadrant_id": "pricey_low",
       "outstanding": false
     },
     {
@@ -193,6 +211,7 @@
       "x": 3.4,
       "y": 60,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": false
     },
     {
@@ -202,6 +221,7 @@
       "x": 9,
       "y": 59.8,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": false
     },
     {
@@ -211,6 +231,7 @@
       "x": 165,
       "y": 58.6,
       "quadrant": "pricey + weaker",
+      "quadrant_id": "pricey_low",
       "outstanding": false
     },
     {
@@ -220,6 +241,7 @@
       "x": 2.2,
       "y": 57.4,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": true
     },
     {
@@ -229,6 +251,7 @@
       "x": 5.2,
       "y": 56.3,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": false
     },
     {
@@ -238,6 +261,7 @@
       "x": 190,
       "y": 55,
       "quadrant": "pricey + weaker",
+      "quadrant_id": "pricey_low",
       "outstanding": false
     },
     {
@@ -247,6 +271,7 @@
       "x": 1.1,
       "y": 52.6,
       "quadrant": "cheap + weaker",
+      "quadrant_id": "cheap_low",
       "outstanding": true
     }
   ]

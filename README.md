@@ -58,7 +58,7 @@ aaplot plot [--y intelligence|coding|agentic|speed] [--x index-run-cost|output-p
 aaplot compare <slug> <slug>... [--json]
 ```
 
-`--creator`, `--min-quality`, `--max-cost`, `--cheap`, `--offline` and `--demo` work with every mode. Examples:
+`--offline` and `--demo` work with every mode. The filters `--creator`, `--min-quality`, `--max-cost` and `--cheap` apply to `models` and `plot`; `compare` ignores them and always shows exactly the slugs you name. Examples:
 
 ```
 aaplot models --demo --top 5
@@ -68,7 +68,7 @@ aaplot compare gpt-5 claude-opus-4-7 --json
 ```
 
 - `models` defaults to value sort (intelligence ÷ index-run cost), all rows.
-- `plot` prints the quadrant chart with its full legend (default top 25 by intelligence). Colour is used only on a TTY and never when `NO_COLOR` is set. `--json` returns the plotted points, medians and each point's quadrant instead of the chart.
+- `plot` prints the quadrant chart with its full legend (default top 25 by intelligence). Colour is used only on a TTY and never when `NO_COLOR` is set. `--json` returns the plotted points, medians and each point's quadrant instead of the chart: `quadrant` is the display label, which follows the Y axis (`cheap + smart`, `cheap + fast`, …), and `quadrant_id` is a stable key for scripts, one of `cheap_high`, `pricey_high`, `cheap_low`, `pricey_low` (cheap = x at or below the median, high = y at or above it).
 - `compare` marks the best model per metric with ★; `--json` lists each metric's values and `winners`. An unknown slug exits 1.
 - JSON fields are flat snake_case (`intelligence_index`, `index_run_cost`, `price_1m_output_tokens`, …). Missing values are `null`, never 0. Every JSON document carries `attribution`, `source` (`demo` / `live` / `cache`), `index_version`, `updated_at` and `stale`.
 - Exit codes: 0 success, 1 data or lookup error (no key, offline with no cache, unknown slug), 2 usage error.
