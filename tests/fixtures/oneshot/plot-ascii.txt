@@ -1,0 +1,35 @@
+Intelligence Index vs index run cost (USD) (log)
+
+      ┌────────────────────────────────────────────────────────────┐    # model                x     y↓
+        cheap + smart                    |        pricey + smart      ★A lumen-forge-x2    $260   77.9
+                                         |                     A      ★B quarry-frontier   $210   76.5
+                                         |                   B        ★C nimbus-omni       $130   74.2
+                                         |                            ★D kestrel-1-max      $95   71.8
+   75                                    |                            ★E halcyon-pro        $88   70.6
+                                         |              C             ★F nimbus-quant       $58     70
+                                         |                             G bramble-72b        $72   69.4
+                                         |           D                ★H kestrel-orbit      $42   68.1
+                                         |          E                 ★I quarry-blend       $34   67.3
+   70                                    |      F G                   ★J lumen-axis         $30   66.8
+                                         |   H                        ★K halcyon-studio     $26     66
+                                         |I                           ★L halcyon-t         $6.9   65.1
+                                        KJ                             M nimbus-flow        $20   64.7
+   65                      L             |                            ★N nimbus-mini-3     $4.6   63.8
+      ----------------N--------------M---+------------------------     O bramble-path       $16   63.5
+                                  PO     |                             P kestrel-1-mid      $14   62.9
+                                         |                            ★Q kestrel-1         $3.1   61.2
+                   Q                     |                             R lumen-titan-2     $230   60.4
+   60              S         T           |                    R        S lumen-lite        $3.4     60
+                                         |                U            T quarry-pulse        $9   59.8
+               V                         |                             U halcyon-max       $165   58.6
+                        W                |                            ★V quarry-8b         $2.2   57.4
+                                         |                             W halcyon-drift     $5.2   56.3
+   55                                    |                  X          X quarry-titan      $190     55
+                                         |                            ★Y bramble-3b        $1.1   52.6
+        Y                                |
+        cheap + weaker                   |       pricey + weaker
+      └┴──────┴────────┴──────┴──────┴────────┴──────┴──────┴────┘
+      $1     $2       $5     $10    $20      $50   $100   $200
+n=25/25  median index run cost (USD): $30  median Intelligence Index: 64.7  ★ 15 outstanding
+★ marks outstanding models (cost-band leaders and the Pareto frontier)
+Data: Artificial Analysis — artificialanalysis.ai · Index v4.1 · synthetic demo data

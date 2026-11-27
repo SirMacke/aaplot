@@ -1,0 +1,16 @@
+          │kestrel-1       nimbus-omni     halcyon-pro
+Creator   │Kestrel Labs    Nimbus AI       Halcyon
+Intel     │           61.2            74.2★           70.6
+Code      │           52.4              69★           68.8
+Agentic   │           48.1            68.1★           64.3
+Speed     │            240★            150             165
+TTFT      │            0.5             0.5             0.5
+E2E       │            4.2             4.2             4.2
+Value     │           19.7★            0.6             0.8
+Idx$      │           $3.1★           $130             $88
+In $/1M   │           $0.3★             $8              $4
+Out $/1M  │           $0.6★            $25           $12.5
+Release   │     2026-03-02      2026-03-30★     2026-02-02
+
+★ best value in each row
+Data: Artificial Analysis — artificialanalysis.ai · Index v4.1 · synthetic demo data
