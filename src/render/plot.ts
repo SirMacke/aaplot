@@ -42,6 +42,12 @@ export interface QuadrantPlotOptions {
   xFormat?: (value: number) => string;
   yFormat?: (value: number) => string;
   colorize?: boolean;
+  /**
+   * Allow ANSI escape codes. Defaults to true. When false the output is plain
+   * text: no creator colours, no emphasis on outstanding markers, no bold
+   * legend header. Used when stdout is not a colour terminal.
+   */
+  ansi?: boolean;
   outstanding?: ReadonlySet<string>;
   legendOffset?: number;
   legendSort?: LegendSortField;
@@ -61,6 +67,7 @@ interface ResolvedOptions {
   xFormat: (value: number) => string;
   yFormat: (value: number) => string;
   colorize: boolean;
+  ansi: boolean;
   outstanding: ReadonlySet<string>;
   legendOffset: number;
   legendSort: LegendSortField;
@@ -142,7 +149,8 @@ function resolveOptions(options: QuadrantPlotOptions): ResolvedOptions {
     cornerLabels: options.cornerLabels ?? DEFAULT_CORNER_LABELS,
     xFormat: options.xFormat ?? ((value) => `$${compactNumber(value)}`),
     yFormat: options.yFormat ?? compactNumber,
-    colorize: options.colorize ?? false,
+    colorize: (options.colorize ?? false) && (options.ansi ?? true),
+    ansi: options.ansi ?? true,
     outstanding: options.outstanding ?? new Set(),
     legendOffset: Math.max(0, options.legendOffset ?? 0),
     legendSort: options.legendSort ?? "y",
@@ -331,6 +339,7 @@ function styleMarker(
   outstanding: boolean,
   options: ResolvedOptions,
 ): string {
+  if (!options.ansi) return letter;
   if (!options.colorize || creator === null) {
     return outstanding ? `\x1b[1;4m${letter}\x1b[0m` : letter;
   }
@@ -358,18 +367,58 @@ function writeAt(chars: string[], start: number, text: string): void {
   }
 }
 
-function applyCornerLabels(
+/**
+ * Writes the label `chars` over a row of rendered cells at `start`. Each entry of `cells`
+ * is one visible column (a marker may carry its own ANSI codes), so the
+ * overwrite never splits an escape sequence. Returns false, writing nothing,
+ * when the span is out of range or would hide a marker.
+ */
+function writeLabel(
+  cells: string[],
+  row: readonly CellState[],
+  start: number,
   chars: string[],
+): boolean {
+  const end = start + chars.length;
+  if (start < 0 || end > cells.length) return false;
+  for (let col = start; col < end; col++) {
+    if (row[col]?.letter != null) return false;
+  }
+  chars.forEach((char, index) => {
+    cells[start + index] = char;
+  });
+  return true;
+}
+
+/**
+ * Corner labels are decoration; markers are data. A label that would cover a
+ * marker slides toward the centre, staying in its half of the row, and is left
+ * out if no free span is found.
+ */
+function applyCornerLabels(
+  cells: string[],
+  row: readonly CellState[],
   canvasWidth: number,
   topRow: boolean,
   options: ResolvedOptions,
 ): void {
   if (canvasWidth < 40) return;
   const [tl, tr, bl, br] = options.cornerLabels;
-  const left = topRow ? tl : bl;
-  const right = topRow ? tr : br;
-  writeAt(chars, CORNER_GAP, left);
-  writeAt(chars, canvasWidth - right.length - CORNER_GAP, right);
+  const left = [...(topRow ? tl : bl)];
+  const right = [...(topRow ? tr : br)];
+  const half = Math.floor(canvasWidth / 2);
+  const leftStart = CORNER_GAP;
+  if (!writeLabel(cells, row, leftStart, left)) {
+    for (let start = leftStart + 1; start + left.length <= half; start++) {
+      if (writeLabel(cells, row, start, left)) break;
+    }
+  }
+  const rightStart = canvasWidth - right.length - CORNER_GAP;
+  if (!writeLabel(cells, row, rightStart, right)) {
+    for (let start = rightStart - 1; start >= half; start--) {
+      if (writeLabel(cells, row, start, right)) break;
+    }
+  }
 }
 
 function niceTicks(min: number, max: number, count: number): number[] {
@@ -455,11 +504,12 @@ function formatLegendHeaderCol(
   asc: boolean,
   width: number,
   alignStart: boolean,
+  ansi: boolean,
 ): string {
   const isActive = field === active;
   const text = isActive ? `${label}${asc ? "↑" : "↓"}` : label;
   const padded = alignStart ? text.padEnd(width) : text.padStart(width);
-  return isActive ? `${LEGEND_HEADER_BOLD_ON}${padded}${LEGEND_HEADER_BOLD_OFF}` : padded;
+  return isActive && ansi ? `${LEGEND_HEADER_BOLD_ON}${padded}${LEGEND_HEADER_BOLD_OFF}` : padded;
 }
 
 function legendHeader(options: ResolvedOptions): string {
@@ -471,9 +521,10 @@ function legendHeader(options: ResolvedOptions): string {
     options.legendSortAsc,
     modelWidth,
     true,
+    options.ansi,
   );
-  const xCol = formatLegendHeaderCol("x", "x", options.legendSort, options.legendSortAsc, LEGEND_X_WIDTH, false);
-  const yCol = formatLegendHeaderCol("y", "y", options.legendSort, options.legendSortAsc, LEGEND_Y_WIDTH, false);
+  const xCol = formatLegendHeaderCol("x", "x", options.legendSort, options.legendSortAsc, LEGEND_X_WIDTH, false, options.ansi);
+  const yCol = formatLegendHeaderCol("y", "y", options.legendSort, options.legendSortAsc, LEGEND_Y_WIDTH, false, options.ansi);
   return `# ${modelCol}${xCol} ${yCol}`;
 }
 
@@ -638,19 +689,20 @@ export function renderQuadrantDetailed(
   const legendLines = legendLinesFor(placed, resolved);
   const cornerRows = new Set([0, resolved.height - 1]);
   const canvasRows = layout.canvas.cells.map((row) =>
-    row.map((cell) => renderCell(layout.canvas, cell, resolved)).join(""),
+    row.map((cell) => renderCell(layout.canvas, cell, resolved)),
   );
 
   lines.push(topBorder(resolved, gutterWidth, legendHeader(resolved)));
   for (let row = 0; row < resolved.height; row++) {
-    const chars = (canvasRows[row] ?? "").split("");
+    const cells = canvasRows[row] ?? [];
     if (cornerRows.has(row) && !resolved.colorize) {
-      applyCornerLabels(chars, resolved.width, row === 0, resolved);
+      const cellRow = layout.canvas.cells[row] ?? [];
+      applyCornerLabels(cells, cellRow, resolved.width, row === 0, resolved);
     }
     const tick = yTicks.find((entry) => entry.row === row);
     const gutter = (tick?.label ?? "").padStart(gutterWidth);
     const legend = legendLines[row] ?? "";
-    const line = `${gutter} ${chars.join("")}${legend.length > 0 ? `${LEGEND_GAP}${legend}` : ""}`;
+    const line = `${gutter} ${cells.join("")}${legend.length > 0 ? `${LEGEND_GAP}${legend}` : ""}`;
     lines.push(line.trimEnd());
   }
   lines.push(bottomBorder(resolved, gutterWidth, xTicks));
@@ -692,6 +744,7 @@ export interface ModelsPlotOptions {
   logX?: boolean;
   ascii?: boolean;
   colorize?: boolean;
+  ansi?: boolean;
   width?: number;
   height?: number;
   title?: string;
@@ -858,6 +911,7 @@ export function renderModelsQuadrant(
     logX: options.logX ?? true,
     ascii: options.ascii ?? false,
     colorize: options.colorize ?? false,
+    ...(options.ansi !== undefined ? { ansi: options.ansi } : {}),
     cornerLabels: info.cornerLabels,
     outstanding: info.outstanding,
     xFormat: (value) => formatPlotX(value, xField),

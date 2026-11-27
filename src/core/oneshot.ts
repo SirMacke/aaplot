@@ -259,11 +259,11 @@ export function formatPlotText(
     ...modelOptions,
     ascii: options.ascii,
     colorize: options.color,
+    ansi: options.color,
     width: options.width,
     height: plotHeight(options, info.plotted),
   });
-  const body = options.color ? text : stripAnsi(text);
-  return `${body}\n★ marks outstanding models (cost-band leaders and the Pareto frontier)\n${footer(meta)}\n`;
+  return `${text}\n★ marks outstanding models (cost-band leaders and the Pareto frontier)\n${footer(meta)}\n`;
 }
 
 export function formatPlotJson(
