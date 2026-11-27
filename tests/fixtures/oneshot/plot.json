@@ -1,0 +1,253 @@
+{
+  "attribution": "Data: Artificial Analysis — artificialanalysis.ai",
+  "source": "demo",
+  "index_version": 4.1,
+  "updated_at": null,
+  "stale": false,
+  "filters": {
+    "creator": null,
+    "min_quality": null,
+    "max_cost": null,
+    "cheap": false
+  },
+  "title": "Intelligence Index vs index run cost (USD) (log)",
+  "y": "intelligence",
+  "x": "index_run_cost",
+  "y_label": "Intelligence Index",
+  "x_label": "index run cost (USD)",
+  "log_x": true,
+  "sort": "intelligence",
+  "top": 25,
+  "total": 34,
+  "plotted": 25,
+  "omitted": 0,
+  "median_x": 30,
+  "median_y": 64.7,
+  "points": [
+    {
+      "slug": "lumen-forge-x2",
+      "name": "Lumen Forge X2",
+      "creator": "Lumen Forge",
+      "x": 260,
+      "y": 77.9,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "quarry-frontier",
+      "name": "Quarry Frontier",
+      "creator": "Quarry Systems",
+      "x": 210,
+      "y": 76.5,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "nimbus-omni",
+      "name": "Nimbus Omni",
+      "creator": "Nimbus AI",
+      "x": 130,
+      "y": 74.2,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "kestrel-1-max",
+      "name": "Kestrel 1 Max",
+      "creator": "Kestrel Labs",
+      "x": 95,
+      "y": 71.8,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "halcyon-pro",
+      "name": "Halcyon Pro",
+      "creator": "Halcyon",
+      "x": 88,
+      "y": 70.6,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "nimbus-quant",
+      "name": "Nimbus Quant",
+      "creator": "Nimbus AI",
+      "x": 58,
+      "y": 70,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "bramble-72b",
+      "name": "Bramble 72B",
+      "creator": "Bramble",
+      "x": 72,
+      "y": 69.4,
+      "quadrant": "pricey + smart",
+      "outstanding": false
+    },
+    {
+      "slug": "kestrel-orbit",
+      "name": "Kestrel Orbit",
+      "creator": "Kestrel Labs",
+      "x": 42,
+      "y": 68.1,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "quarry-blend",
+      "name": "Quarry Blend",
+      "creator": "Quarry Systems",
+      "x": 34,
+      "y": 67.3,
+      "quadrant": "pricey + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "lumen-axis",
+      "name": "Lumen Axis",
+      "creator": "Lumen Forge",
+      "x": 30,
+      "y": 66.8,
+      "quadrant": "cheap + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "halcyon-studio",
+      "name": "Halcyon Studio",
+      "creator": "Halcyon",
+      "x": 26,
+      "y": 66,
+      "quadrant": "cheap + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "halcyon-t",
+      "name": "Halcyon Turbo",
+      "creator": "Halcyon",
+      "x": 6.9,
+      "y": 65.1,
+      "quadrant": "cheap + smart",
+      "outstanding": true
+    },
+    {
+      "slug": "nimbus-flow",
+      "name": "Nimbus Flow",
+      "creator": "Nimbus AI",
+      "x": 20,
+      "y": 64.7,
+      "quadrant": "cheap + smart",
+      "outstanding": false
+    },
+    {
+      "slug": "nimbus-mini-3",
+      "name": "Nimbus Mini 3",
+      "creator": "Nimbus AI",
+      "x": 4.6,
+      "y": 63.8,
+      "quadrant": "cheap + weaker",
+      "outstanding": true
+    },
+    {
+      "slug": "bramble-path",
+      "name": "Bramble Path",
+      "creator": "Bramble",
+      "x": 16,
+      "y": 63.5,
+      "quadrant": "cheap + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "kestrel-1-mid",
+      "name": "Kestrel 1 Mid",
+      "creator": "Kestrel Labs",
+      "x": 14,
+      "y": 62.9,
+      "quadrant": "cheap + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "kestrel-1",
+      "name": "Kestrel 1",
+      "creator": "Kestrel Labs",
+      "x": 3.1,
+      "y": 61.2,
+      "quadrant": "cheap + weaker",
+      "outstanding": true
+    },
+    {
+      "slug": "lumen-titan-2",
+      "name": "Lumen Titan 2",
+      "creator": "Lumen Forge",
+      "x": 230,
+      "y": 60.4,
+      "quadrant": "pricey + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "lumen-lite",
+      "name": "Lumen Lite",
+      "creator": "Lumen Forge",
+      "x": 3.4,
+      "y": 60,
+      "quadrant": "cheap + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "quarry-pulse",
+      "name": "Quarry Pulse",
+      "creator": "Quarry Systems",
+      "x": 9,
+      "y": 59.8,
+      "quadrant": "cheap + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "halcyon-max",
+      "name": "Halcyon Max",
+      "creator": "Halcyon",
+      "x": 165,
+      "y": 58.6,
+      "quadrant": "pricey + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "quarry-8b",
+      "name": "Quarry 8B",
+      "creator": "Quarry Systems",
+      "x": 2.2,
+      "y": 57.4,
+      "quadrant": "cheap + weaker",
+      "outstanding": true
+    },
+    {
+      "slug": "halcyon-drift",
+      "name": "Halcyon Drift",
+      "creator": "Halcyon",
+      "x": 5.2,
+      "y": 56.3,
+      "quadrant": "cheap + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "quarry-titan",
+      "name": "Quarry Titan",
+      "creator": "Quarry Systems",
+      "x": 190,
+      "y": 55,
+      "quadrant": "pricey + weaker",
+      "outstanding": false
+    },
+    {
+      "slug": "bramble-3b",
+      "name": "Bramble 3B",
+      "creator": "Bramble",
+      "x": 1.1,
+      "y": 52.6,
+      "quadrant": "cheap + weaker",
+      "outstanding": true
+    }
+  ]
+}
