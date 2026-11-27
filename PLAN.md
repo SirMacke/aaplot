@@ -24,7 +24,7 @@ Chosen over Python (original idea) because:
 - The chart renderer becomes a plain TS module reusable by the Twitch tool (JS-world).
 - Zod replaces pydantic for schema validation.
 
-Deps: `ink`, `react`, `zod`, `env-paths` (config/cache dirs). Tests: `vitest`. Build: `tsup`. Node >= 18, ESM, strict TS.
+Deps: `ink`, `react`, `zod`, `env-paths` (config/cache dirs). Tests: `vitest`. Build: `tsup`. Node >= 22, ESM, strict TS.
 
 ### Testing
 
